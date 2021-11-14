@@ -74,7 +74,7 @@ def parse(tokens: Deque[Token]):
                 if operators:
                     operators.pop()
                 else:
-                    raise ParseError(token, "unexpected closing parenthesis")
+                    raise ParserError(token, "unexpected closing parenthesis")
 
         elif isinstance(token, TokenOperator):
             if last_is_operator or not operands:
