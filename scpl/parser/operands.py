@@ -89,15 +89,15 @@ class ParseVariable(ParseAtom):
         else:
             raise NameError(self.name)
 
-class ParseInt(ParseAtom):
+class ParseInteger(ParseAtom):
     def __init__(self, value: int):
         self.value = value
     def __repr__(self) -> str:
         return f"Int({self.value})"
 
     @staticmethod
-    def from_token(token: Token) -> "ParseInt":
-        atom = ParseInt(int(token.text))
+    def from_token(token: Token) -> "ParseInteger":
+        atom = ParseInteger(int(token.text))
         atom.token = token
         return atom
 
@@ -223,7 +223,7 @@ class ParseIPv4(ParseAtom):
         return ParseBool(True)
 
     def _div(self, other: ParseAtom) -> ParseAtom:
-        if isinstance(other, ParseInt):
+        if isinstance(other, ParseInteger):
             return ParseCIDRv4(self._ip, other.value)
         else:
             raise ParseBadOperandError()
