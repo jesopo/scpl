@@ -125,7 +125,10 @@ class TokenRegex(Token):
 
     def push(self, next: str) -> Optional[str]:
         if self.complete:
-            return "regex already completed"
+            if next in CHARS_WORD:
+                self.text += next
+            else:
+                return "invalid flag character"
         elif self.text:
             self.text += next
             if not self._escape:
