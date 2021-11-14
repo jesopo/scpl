@@ -130,6 +130,12 @@ class ParseString(ParseAtom):
     def _bool(self) -> bool:
         return ParseBool(len(self.value) > 0)
 
+    def _subset_of(self, other: ParseAtom) -> ParseAtom:
+        if isinstance(other, ParseString):
+            return ParseBool(self.value in other.value)
+        else:
+            raise ParseBadOperandError()
+
     def _match_of(self, other: ParseAtom) -> ParseAtom:
         if isinstance(other, ParseRegex):
             match = other.regex.search(self.value)
