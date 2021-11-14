@@ -42,6 +42,8 @@ class ParseBinaryOperator(ParseOperator):
             atom = left._subset_of(right)
         elif self.token.text == "=~":
             atom = left._match_of(right)
+        elif self.token.text == "+":
+            atom = left._add(right)
         elif self.token.text == "/":
             atom = left._div(right)
         else:

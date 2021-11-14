@@ -17,10 +17,10 @@ OPERATORS_BINARY = {
 
     "&":  Operator(1, "BitwiseAnd"),
     "|":  Operator(1, "BitwiseOr"),
-    "+":  Operator(1, "Add"),
-    "-":  Operator(1, "Subtract"),
-    "/":  Operator(2, "Divide"),
-    "*":  Operator(2, "Multiply"),
+    "+":  Operator(3, "Add"),
+    "-":  Operator(3, "Subtract"),
+    "/":  Operator(3, "Divide"),
+    "*":  Operator(3, "Multiply"),
 }
 
 OPERATORS_UNARY = {

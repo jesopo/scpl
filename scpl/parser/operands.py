@@ -39,6 +39,8 @@ class ParseAtom:
     def _or(self, other: "ParseAtom") -> "ParseBool":
         return ParseBool(self._bool().value or other._bool().value)
 
+    def _add(self, other: "ParseAtom") -> "ParseAtom":
+        raise NotImplementedError()
     def _div(self, other: "ParseAtom") -> "ParseAtom":
         raise NotImplementedError()
 
