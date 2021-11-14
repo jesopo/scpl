@@ -34,6 +34,8 @@ class ParseAtom:
     def _bool(self) -> "ParseBool":
         raise NotImplementedError()
 
+    def _equal(self, other: "ParseAtom") -> "ParseBool":
+        raise NotImplementedError()
     def _and(self, other: "ParseAtom") -> "ParseBool":
         return ParseBool(self._bool().value and other._bool().value)
     def _or(self, other: "ParseAtom") -> "ParseBool":
@@ -64,6 +66,9 @@ class ParseBool(ParseAtom):
 
     def _bool(self) -> bool:
         return self
+    def _equal(self, other: ParseAtom) -> "ParseBool":
+        return ParseBool(isinstance(other, ParseBool)
+            and self.value == other.value)
 
 class ParseVariable(ParseAtom):
     def __init__(self, name: str):
@@ -104,6 +109,10 @@ class ParseInteger(ParseAtom):
     def _bool(self) -> ParseBool:
         return ParseBool(self.value != 0)
 
+    def _equal(self, other: ParseAtom) -> ParseBool:
+        return ParseBool(isinstance(other, ParseInteger)
+            and self.value == other.value)
+
 class ParseFloat(ParseAtom):
     def __init__(self, token: Token):
         super().__init__(token)
@@ -116,6 +125,10 @@ class ParseFloat(ParseAtom):
         atom = ParseFloat(float(token.text))
         atom.token = token
         return atom
+
+    def _equal(self, other: ParseAtom) -> ParseBool:
+        return ParseBool(isinstance(other, ParseFloat)
+            and self.value == other.value)
 
 class ParseString(ParseAtom):
     def __init__(self, value: str):
@@ -131,6 +144,10 @@ class ParseString(ParseAtom):
 
     def _bool(self) -> bool:
         return ParseBool(len(self.value) > 0)
+
+    def _equal(self, other: ParseAtom) -> ParseBool:
+        return ParseBool(isinstance(other, ParseString)
+            and self.value == other.value)
 
     def _subset_of(self, other: ParseAtom) -> ParseAtom:
         if isinstance(other, ParseString):
@@ -171,6 +188,11 @@ class ParseRegex(ParseAtom):
         atom.token = token
         return atom
 
+    def _equal(self, other: ParseAtom) -> ParseBool:
+        return ParseBool(isinstance(other, ParseRegex) and
+            self.flags == other.flags and
+            self._regex == other.regex)
+
     def _add(self, other: ParseAtom) -> ParseAtom:
         if isinstance(other, ParseRegex):
             common_flags = self.flags & other.flags
@@ -204,6 +226,11 @@ class ParseCIDRv4(ParseAtom):
     def _bool(self) -> bool:
         return ParseBool(True)
 
+    def _equal(self, other: ParseAtom) -> ParseBool:
+        return ParseBool(isinstance(other, ParseCIDRv4)
+            and self._prefix  == other._prefix
+            and self._network == other._network)
+
 class ParseIPv4(ParseAtom):
     def __init__(self, ip: int):
         self._ip = ip
@@ -221,6 +248,10 @@ class ParseIPv4(ParseAtom):
 
     def _bool(self):
         return ParseBool(True)
+
+    def _equal(self, other: ParseAtom) -> "ParseBool":
+        return (isinstance(other, ParseCIDRv4)
+            and self._ip == other._ip)
 
     def _div(self, other: ParseAtom) -> ParseAtom:
         if isinstance(other, ParseInteger):

@@ -34,7 +34,9 @@ class ParseBinaryOperator(ParseOperator):
         left  = self.left.eval(vars)
         right = self.right.eval(vars)
 
-        if self.token.text == "&&":
+        if self.token.text == "==":
+            atom = left._equal(right)
+        elif self.token.text == "&&":
             atom = left._bool()._and(right)
         elif self.token.text == "||":
             atom = left._bool()._or(right)
