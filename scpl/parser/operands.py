@@ -203,6 +203,8 @@ class ParseIPv4(ParseAtom):
         if isinstance(other, ParseCIDRv4):
             network = self._ip & other._mask
             return ParseBool(network == other._network)
+        else:
+            raise ParseBadOperandError()
 
 KEYWORDS: Dict[str, Type[ParseAtom]] = {
     "true":  ParseBool,
