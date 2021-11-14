@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from re          import compile as re_compile
 from socket      import inet_ntop, inet_pton, AF_INET
 from struct      import pack, unpack
-from typing      import Any, Deque, Dict, List, Type
+from typing      import Any, Deque, Dict, List, Set, Type
 
 from ..common    import *
 from ..lexer     import *
@@ -147,22 +147,43 @@ class ParseString(ParseAtom):
             raise ParseBadOperandError()
 
 class ParseRegex(ParseAtom):
-    def __init__(self, regex: str):
-        delim, r = regex[0], regex[1:]
-        r, flags = r.rsplit(delim, 1)
+    def __init__(self,
+            regex: str,
+            flags: Set[str]):
 
-        self.delim = delim
-        self.flags = flags
-        self.regex = re_compile(r)
+        self.flags  = flags
+        self.regex  = re_compile(regex)
+        self._regex = regex
 
     def __repr__(self) -> str:
-        return f"Regex({self.token.text})"
+        if self.flags:
+            flags = ''.join(self.flags)
+            return f"Regex({self._regex}, {flags})"
+        else:
+            return f"Regex({self._regex})"
 
     @staticmethod
     def from_token(token: Token) -> "ParseRegex":
-        atom = ParseRegex(token.text)
+        delim, r = token.text[0], token.text[1:]
+        r, flags = r.rsplit(delim, 1)
+
+        atom = ParseRegex(r, set(flags))
         atom.token = token
         return atom
+
+    def _add(self, other: ParseAtom) -> ParseAtom:
+        if isinstance(other, ParseRegex):
+            common_flags = self.flags & other.flags
+            regex_1      = self._regex
+            regex_2      = other._regex
+
+            if uncommon := self.flags - common_flags:
+                regex_1 = f"(?{''.join(uncommon)}:{regex_1})"
+            if uncommon := other.flags - common_flags:
+                regex_2 = f"(?{''.join(uncommon)}:{regex_2})"
+            return ParseRegex(regex_1 + regex_2, common_flags)
+        else:
+            raise ParseBadOperandError()
 
 class ParseCIDRv4(ParseAtom):
     def __init__(self,
