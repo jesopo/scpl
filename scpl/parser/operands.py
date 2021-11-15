@@ -8,6 +8,12 @@ from typing      import Any, Deque, Dict, List, Set, Type
 from ..common    import *
 from ..lexer     import *
 
+# used for pretty printing when we don't have a delim already.
+# it'll pick whichever doesn't already exist in the string, or pick [0] and
+# escape all instances in the string
+STRING_DELIMS = ['"', "'"]
+REGEX_DELIMS  = ["/", ",", ";", ":"]
+
 class ParseBadOperandError(Exception):
     pass
 
@@ -130,8 +136,6 @@ class ParseFloat(ParseAtom):
         return ParseBool(isinstance(other, ParseFloat)
             and self.value == other.value)
 
-STRING_DELIMS = ['"', "'"]
-
 class ParseString(ParseAtom):
     def __init__(self,
             delim: Optional[str],
@@ -181,8 +185,6 @@ class ParseString(ParseAtom):
             return ParseString(None, value)
         else:
             raise ParseBadOperandError()
-
-REGEX_DELIMS = ["/", ",", ";", ":"]
 
 class ParseRegex(ParseAtom):
     def __init__(self,
