@@ -106,7 +106,7 @@ def parse(tokens: Deque[Token]):
                 if "." in token.text:
                     operands.append(ParseFloat.from_token(token))
                 else:
-                    operands.append(ParseInt.from_token(token))
+                    operands.append(ParseInteger.from_token(token))
             elif isinstance(token, TokenString):
                 operands.append(ParseString.from_token(token))
             elif isinstance(token, TokenRegex):
