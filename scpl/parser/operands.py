@@ -130,6 +130,8 @@ class ParseFloat(ParseAtom):
         return ParseBool(isinstance(other, ParseFloat)
             and self.value == other.value)
 
+STRING_DELIMS = ['"', "'"]
+
 class ParseString(ParseAtom):
     def __init__(self,
             delim: Optional[str],
@@ -139,17 +141,10 @@ class ParseString(ParseAtom):
         self.value  = value
 
     def __repr__(self) -> str:
-        value = self.value
-        if self._delim is None:
-            delim  = '"'
-            found  = find_unescaped(value, delim)
-            rdelim = f"\\{delim}"
-            for index in reversed(found):
-                value = value[:index] + rdelim + value[index+1:]
+        if self._delim is not None:
+            return f"{self._delim}{self.value}{self._delim}"
         else:
-            delim = self._delim
-
-        return f"String({delim}{value}{delim})"
+            return with_delimiter(self.value, STRING_DELIMS)
 
     @staticmethod
     def from_token(token: Token) -> "ParseString":
@@ -187,28 +182,34 @@ class ParseString(ParseAtom):
         else:
             raise ParseBadOperandError()
 
+REGEX_DELIMS = ["/", ",", ";", ":"]
+
 class ParseRegex(ParseAtom):
     def __init__(self,
+            delim: Optional[str],
             regex: str,
             flags: Set[str]):
 
+        self._delim = delim
         self.flags  = flags
         self.regex  = re_compile(regex)
         self._regex = regex
 
     def __repr__(self) -> str:
-        if self.flags:
-            flags = ''.join(self.flags)
-            return f"Regex({self._regex}, {flags})"
+        if self._delim is not None:
+            regex = f"{self._delim}{self._regex}{self._delim}"
         else:
-            return f"Regex({self._regex})"
+            regex = with_delimiter(self._regex, REGEX_DELIMS)
+
+        flags = ''.join(self.flags)
+        return f"Regex({regex}{flags})"
 
     @staticmethod
     def from_token(token: Token) -> "ParseRegex":
         delim, r = token.text[0], token.text[1:]
         r, flags = r.rsplit(delim, 1)
 
-        atom = ParseRegex(r, set(flags))
+        atom = ParseRegex(delim, r, set(flags))
         atom.token = token
         return atom
 
@@ -227,7 +228,13 @@ class ParseRegex(ParseAtom):
                 regex_1 = f"(?{''.join(uncommon)}:{regex_1})"
             if uncommon := other.flags - common_flags:
                 regex_2 = f"(?{''.join(uncommon)}:{regex_2})"
-            return ParseRegex(regex_1 + regex_2, common_flags)
+
+            delim: Optional[str] = None
+            if (self._delim is not None
+                    and self._delim == other._delim):
+                delim = self._delim
+
+            return ParseRegex(delim, regex_1 + regex_2, common_flags)
         else:
             raise ParseBadOperandError()
 
