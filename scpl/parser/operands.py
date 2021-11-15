@@ -122,6 +122,17 @@ class ParseInteger(ParseAtom):
         return ParseBool(isinstance(other, ParseInteger)
             and self.value == other.value)
 
+    def _add(self, other: ParseAtom) -> ParseAtom:
+        if isinstance(other, ParseInteger):
+            return ParseInteger(self.value + other.value)
+        else:
+            raise ParseBadOperandError()
+    def _subtract(self, other: ParseAtom) -> ParseAtom:
+        if isinstance(other, ParseInteger):
+            return ParseInteger(self.value - other.value)
+        else:
+            raise ParseBadOperandError()
+
 class ParseFloat(ParseAtom):
     def __init__(self, value: float):
         self.value = value
@@ -137,6 +148,17 @@ class ParseFloat(ParseAtom):
     def _equal(self, other: ParseAtom) -> ParseBool:
         return ParseBool(isinstance(other, ParseFloat)
             and self.value == other.value)
+
+    def _add(self, other: ParseAtom) -> ParseAtom:
+        if isinstance(other, ParseFloat):
+            return ParseInteger(self.value + other.value)
+        else:
+            raise ParseBadOperandError()
+    def _subtract(self, other: ParseAtom) -> ParseAtom:
+        if isinstance(other, ParseFloat):
+            return ParseInteger(self.value - other.value)
+        else:
+            raise ParseBadOperandError()
 
 class ParseString(ParseAtom):
     def __init__(self,
