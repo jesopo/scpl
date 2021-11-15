@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing      import List
 
 @dataclass
 class Operator:
@@ -28,3 +29,21 @@ OPERATORS_UNARY = {
     "+":  Operator(3, "Pos"),
     "-":  Operator(3, "Neg"),
 }
+
+def find_unescaped(
+        s: str,
+        c: str
+        ) -> List[int]:
+
+    indexes: List[int] = []
+    i = 0
+
+    while i < len(s):
+        c2 = s[i]
+        if c2 == "\\":
+            i += 1
+        elif c2 == c:
+            indexes.append(i)
+        i += 1
+
+    return indexes

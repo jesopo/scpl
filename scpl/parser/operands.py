@@ -131,14 +131,29 @@ class ParseFloat(ParseAtom):
             and self.value == other.value)
 
 class ParseString(ParseAtom):
-    def __init__(self, value: str):
-        self.value = value
+    def __init__(self,
+            delim: Optional[str],
+            value: str):
+
+        self._delim = delim
+        self.value  = value
+
     def __repr__(self) -> str:
-        return f"String({self.value})"
+        value = self.value
+        if self._delim is None:
+            delim  = '"'
+            found  = find_unescaped(value, delim)
+            rdelim = f"\\{delim}"
+            for index in reversed(found):
+                value = value[:index] + rdelim + value[index+1:]
+        else:
+            delim = self._delim
+
+        return f"String({delim}{value}{delim})"
 
     @staticmethod
     def from_token(token: Token) -> "ParseString":
-        atom = ParseString(token.text[1:-1])
+        atom = ParseString(token.text[0], token.text[1:-1])
         atom.token = token
         return atom
 
@@ -148,6 +163,15 @@ class ParseString(ParseAtom):
     def _equal(self, other: ParseAtom) -> ParseBool:
         return ParseBool(isinstance(other, ParseString)
             and self.value == other.value)
+
+    def _add(self, other: ParseAtom) -> ParseAtom:
+        if isinstance(other, ParseString):
+            delim: Optional[str] = None
+            if self._delim and self._delim == other._delim:
+                delim = self._delim
+            return ParseString(delim, self.value + other.value)
+        else:
+            raise ParseBadOperandError()
 
     def _subset_of(self, other: ParseAtom) -> ParseAtom:
         if isinstance(other, ParseString):
@@ -159,7 +183,7 @@ class ParseString(ParseAtom):
         if isinstance(other, ParseRegex):
             match = other.regex.search(self.value)
             value = match.group(0) if match else ""
-            return ParseString(value)
+            return ParseString(None, value)
         else:
             raise ParseBadOperandError()
 
