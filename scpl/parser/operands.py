@@ -121,9 +121,8 @@ class ParseInteger(ParseAtom):
             and self.value == other.value)
 
 class ParseFloat(ParseAtom):
-    def __init__(self, token: Token):
-        super().__init__(token)
-        self.value = float(token.text)
+    def __init__(self, value: float):
+        self.value = value
     def __repr__(self) -> str:
         return f"Float({self.value})"
 
