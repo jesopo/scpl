@@ -1,6 +1,7 @@
 from collections import deque
 from dataclasses import dataclass
 from re          import compile as re_compile
+from re          import escape as re_escape
 from socket      import inet_ntop, inet_pton, AF_INET
 from struct      import pack, unpack
 from typing      import Any, Deque, Dict, List, Set, Type
@@ -169,6 +170,9 @@ class ParseString(ParseAtom):
             if self._delim and self._delim == other._delim:
                 delim = self._delim
             return ParseString(delim, self.value + other.value)
+        elif isinstance(other, ParseRegex):
+            cast_self = ParseRegex(None, re_escape(self.value), set())
+            return cast_self._add(other)
         else:
             raise ParseBadOperandError()
 
