@@ -50,6 +50,8 @@ class ParseAtom:
 
     def _add(self, other: "ParseAtom") -> "ParseAtom":
         raise NotImplementedError()
+    def _subtract(self, other: "ParseAtom") -> "ParseAtom":
+        raise NotImplementedError()
     def _div(self, other: "ParseAtom") -> "ParseAtom":
         raise NotImplementedError()
 
