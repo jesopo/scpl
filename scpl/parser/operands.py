@@ -241,6 +241,9 @@ class ParseRegex(ParseAtom):
                 delim = self._delim
 
             return ParseRegex(delim, regex_1 + regex_2, common_flags)
+        elif isinstance(other, ParseString):
+            cast_other = ParseRegex(None, re_escape(other.value), set())
+            return self._add(cast_other)
         else:
             raise ParseBadOperandError()
 
