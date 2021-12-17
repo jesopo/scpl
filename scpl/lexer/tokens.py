@@ -9,6 +9,12 @@ CHARS_HEX      = set(string.hexdigits)
 OPERATORS_BOTH = set(OPERATORS_BINARY) | set(OPERATORS_UNARY)
 CHARS_OPERATOR = set(op[0] for op in OPERATORS_BOTH)
 
+DELIMS_STRING = {
+    '"': '"',
+    "'": "'",
+    "“": "”"
+}
+
 class Token:
     def __init__(self,
             index: int,
@@ -103,13 +109,13 @@ class TokenString(Token):
         elif self.text:
             self.text += next
             if not self._escape:
-                if next == self._delim:
+                if next == DELIMS_STRING[self._delim]:
                     self.complete = True
                 elif next == "\\":
                     self._escape = True
             else:
                 self._escape = False
-        elif next in {'"', "'"}:
+        elif next in DELIMS_STRING:
             self._delim = next
             self.text  += next
         else:
