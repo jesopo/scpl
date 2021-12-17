@@ -1,5 +1,5 @@
 import unittest
-from scpl.lexer import LexerError, tokenise
+from scpl.lexer import LexerError, LexerUnfinishedError, tokenise
 from scpl.lexer import (TokenOperator, TokenNumber, TokenRegex, TokenSpace,
     TokenString, TokenWord)
 from scpl.common import OPERATORS_BINARY, OPERATORS_UNARY
@@ -26,7 +26,7 @@ class LexerTestString(unittest.TestCase):
         self.assertEqual(token.text, '"asd asd"')
 
     def test_unfinished(self):
-        self.assertRaises(LexerError, lambda: tokenise("'asd"))
+        self.assertRaises(LexerUnfinishedError, lambda: tokenise("'asd"))
 
 class LexerTestNumber(unittest.TestCase):
     def test_int(self):
@@ -45,7 +45,7 @@ class LexerTestNumber(unittest.TestCase):
         self.assertEqual(token.text, '.23')
 
     def test_unfinished(self):
-        self.assertRaises(LexerError, lambda: tokenise("1."))
+        self.assertRaises(LexerUnfinishedError, lambda: tokenise("1."))
 
     def test_invalid(self):
         self.assertRaises(LexerError, lambda: tokenise("1.2.3"))
@@ -91,4 +91,4 @@ class LexerTestRegex(unittest.TestCase):
         self.assertEqual(tokens[4].__class__, TokenOperator)
 
     def test_unfinished(self):
-        self.assertRaises(LexerError, lambda: tokenise("/asd"))
+        self.assertRaises(LexerUnfinishedError, lambda: tokenise("/asd"))

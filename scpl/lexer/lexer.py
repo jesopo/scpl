@@ -10,6 +10,9 @@ class LexerError(Exception):
             error: str):
         self.index = index
         super().__init__(error)
+class LexerUnfinishedError(LexerError):
+    def __init__(self, index: int):
+        super().__init__(index, "unfinished token")
 
 def tokenise(expression: str) -> Deque[Token]:
     char_stream       = deque(expression)
@@ -67,7 +70,7 @@ def tokenise(expression: str) -> Deque[Token]:
                         btoken_index   = btoken.index + len(btoken.text)
                         raise LexerError(btoken_index, berror)
                     elif token_text:
-                        raise LexerError(token.index, "unfinished token")
+                        raise LexerUnfinishedError(token.index)
                     elif char_stream[0]:
                         # unrecognised single character
                         raise LexerError(char_index, "unknown token")
