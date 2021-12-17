@@ -224,6 +224,9 @@ class TokenIPv6(Token):
             if 0 <= int(self._hextet, 16) <= 0xffff:
                 self.text += next
             else:
+                self.complete = False
                 return "hextet must be between 0 and ffff"
         else:
+            if next in CHARS_WORD:
+                self.complete = False
             return "invalid IPv6 character"
