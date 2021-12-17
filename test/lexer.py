@@ -1,7 +1,7 @@
 import unittest
 from scpl.lexer import LexerError, LexerUnfinishedError, tokenise
-from scpl.lexer import (TokenOperator, TokenNumber, TokenRegex, TokenSpace,
-    TokenString, TokenWord)
+from scpl.lexer import (TokenIPv4, TokenIPv6, TokenNumber, TokenOperator,
+    TokenRegex, TokenSpace, TokenString, TokenWord)
 from scpl.common import OPERATORS_BINARY, OPERATORS_UNARY
 
 class LexerTestString(unittest.TestCase):
@@ -92,3 +92,40 @@ class LexerTestRegex(unittest.TestCase):
 
     def test_unfinished(self):
         self.assertRaises(LexerUnfinishedError, lambda: tokenise("/asd"))
+
+class LexerTestIPv4(unittest.TestCase):
+    def test_compact(self):
+        token = tokenise("1.2.3.4")[0]
+        self.assertEqual(token.__class__, TokenIPv4)
+        self.assertEqual(token.text, "1.2.3.4")
+
+    def test_exploded(self):
+        token = tokenise("001.002.003.004")[0]
+        self.assertEqual(token.__class__, TokenIPv4)
+        self.assertEqual(token.text, "001.002.003.004")
+
+    def test_invalid(self):
+        self.assertRaises(LexerError, lambda: tokenise("1.2.3.256"))
+
+class LexerTestIPv6(unittest.TestCase):
+    def test_minimum(self):
+        token = tokenise("::")[0]
+        self.assertEqual(token.__class__, TokenIPv6)
+        self.assertEqual(token.text, "::")
+
+    def test_maximum(self):
+        addr = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+        token = tokenise(addr)[0]
+        self.assertEqual(token.__class__, TokenIPv6)
+        self.assertEqual(token.text, addr)
+
+    def test_collapse(self):
+        token = tokenise("1:2:3::4")[0]
+        self.assertEqual(token.__class__, TokenIPv6)
+        self.assertEqual(token.text, "1:2:3::4")
+
+    def test_invalid(self):
+        self.assertRaises(LexerError, lambda: tokenise("1::1::1"))
+        self.assertRaises(LexerError, lambda: tokenise("1::fffff"))
+        self.assertRaises(LexerError, lambda: tokenise("1:2:3:4:5:6:7:8:9"))
+        self.assertRaises(LexerError, lambda: tokenise("1::g"))
