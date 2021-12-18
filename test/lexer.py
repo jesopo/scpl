@@ -25,6 +25,11 @@ class LexerTestString(unittest.TestCase):
         self.assertEqual(token.__class__, TokenString)
         self.assertEqual(token.text, '"asd asd"')
 
+    def test_escape(self):
+        token = tokenise('"asd\\"asd"')[0]
+        self.assertEqual(token.__class__, TokenString)
+        self.assertEqual(token.text, '"asd\\"asd"')
+
     def test_unfinished(self):
         self.assertRaises(LexerUnfinishedError, lambda: tokenise("'asd"))
 
