@@ -7,5 +7,6 @@ python:
 install:
   - pip3 install mypy
 script:
+  - pip3 freeze
   - mypy scpl
   - python3 -m unittest test
