@@ -1,10 +1,10 @@
 import sys
-from typing import List
+from typing import Deque
 
 from .lexer  import tokenise, LexerError
 from .tokens import Token
 
-def main_lexer(line: str) -> List[Token]:
+def main_lexer(line: str) -> Deque[Token]:
     try:
         tokens = tokenise(line)
     except LexerError as e:
