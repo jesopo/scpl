@@ -55,7 +55,7 @@ class ParseAtom:
     def _div(self, other: "ParseAtom") -> "ParseAtom":
         raise NotImplementedError()
 
-    def _subset_of(self, other: "ParseAtom") -> bool:
+    def _subset_of(self, other: "ParseAtom") -> "ParseBool":
         raise NotImplementedError()
     def _match_of(self, other: "ParseAtom") -> "ParseAtom":
         raise NotImplementedError()
@@ -199,7 +199,7 @@ class ParseString(ParseAtom):
         else:
             raise ParseBadOperandError()
 
-    def _subset_of(self, other: ParseAtom) -> ParseAtom:
+    def _subset_of(self, other: ParseAtom) -> ParseBool:
         if isinstance(other, ParseString):
             return ParseBool(self.value in other.value)
         else:
@@ -318,7 +318,7 @@ class ParseIPv4(ParseAtom):
         else:
             raise ParseBadOperandError()
 
-    def _subset_of(self, other: ParseAtom) -> ParseAtom:
+    def _subset_of(self, other: ParseAtom) -> ParseBool:
         if isinstance(other, ParseCIDRv4):
             network = self._ip & other._mask
             return ParseBool(network == other._network)
