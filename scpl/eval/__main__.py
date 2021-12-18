@@ -1,4 +1,4 @@
-import sys
+import sys, traceback
 from collections import deque
 from time        import monotonic
 from typing      import Dict
@@ -23,6 +23,7 @@ def main_eval(
         out = ast.eval(var_atoms)
     except Exception as e:
         print(f"eval error: {type(e).__name__}: {str(e)}")
+        traceback.print_exc()
         sys.exit(1)
     else:
         end = monotonic()
