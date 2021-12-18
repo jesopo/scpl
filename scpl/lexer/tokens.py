@@ -36,6 +36,7 @@ class TokenSpace(TokenTransparent):
         if next in CHARS_SPACE:
             self.text    += next
             self.complete = True
+            return None
         else:
             return "not a space"
 
@@ -46,6 +47,7 @@ class TokenParenthesis(Token):
         elif next in {"(", ")"}:
             self.text    += next
             self.complete = True
+            return None
         else:
             return "not a parenthesis"
 
@@ -55,6 +57,7 @@ class TokenWord(Token):
                 (next in CHARS_DIGIT and len(self.text) > 0)):
             self.text    += next
             self.complete = True
+            return None
         else:
             return "invalid word character"
 
@@ -64,11 +67,13 @@ class TokenOperator(Token):
             if (op := self.text + next) in OPERATORS_BOTH:
                 self.text     = op
                 self.complete = True
+                return None
             else:
                 return "invalid operator"
         elif next in CHARS_OPERATOR:
             self.text     = next
             self.complete = next in OPERATORS_BOTH
+            return None
         else:
             return "not an operator"
 
@@ -83,11 +88,13 @@ class TokenNumber(Token):
         if next in CHARS_DIGIT:
             self.text    += next
             self.complete = True
+            return None
         elif next == ".":
             self.complete = False
             if not self._point:
                 self.text  += next
                 self._point = True
+                return None
             else:
                 return "too many points"
         else:
@@ -115,9 +122,11 @@ class TokenString(Token):
                     self._escape = True
             else:
                 self._escape = False
+            return None
         elif next in DELIMS_STRING:
             self._delim = next
             self.text  += next
+            return None
         else:
             return "invalid string delimiter"
 
@@ -133,6 +142,7 @@ class TokenRegex(Token):
         if self.complete:
             if next in CHARS_WORD:
                 self.text += next
+                return None
             else:
                 return "invalid flag character"
         elif self.text:
@@ -144,6 +154,7 @@ class TokenRegex(Token):
                     self._escape = True
             else:
                 self._escape = False
+            return None
         elif next in CHARS_WORD | CHARS_DIGIT | CHARS_SPACE | set("\\()"):
             return "invalid regex delimiter"
         elif next in OPERATORS_UNARY:
@@ -155,6 +166,7 @@ class TokenRegex(Token):
         else:
             self.text  += next
             self._delim = next
+            return None
 
 class TokenIPv4(Token):
     def __init__(self,
@@ -175,11 +187,13 @@ class TokenIPv4(Token):
                 self._octets += 1
                 self._octet   = ""
                 self.complete = False
+                return None
         elif next in CHARS_DIGIT:
             self._octet += next
             if 0 <= int(self._octet) <= 255:
                 self.text    += next
                 self.complete = self._octets == 3
+                return None
             else:
                 self.complete = False
                 return "octet must be between 0 and 255"
@@ -199,6 +213,7 @@ class TokenIPv6(Token):
         if next == ":":
             if not self.text:
                 self.text += next
+                return None
             elif self._hextets == 7:
                 return "too many hextets"
             elif self.text[-1] == ":":
@@ -213,16 +228,19 @@ class TokenIPv6(Token):
                     self._trunc    = True
                     self._hextets += 2
                     self.complete  = True
+                    return None
             else:
                 self.text     += next
                 self._hextet   = ""
                 self._hextets += 1
                 if not self.complete:
                     self.complete = self._hextets == 7
+                return None
         elif next in CHARS_HEX:
             self._hextet += next
             if 0 <= int(self._hextet, 16) <= 0xffff:
                 self.text += next
+                return None
             else:
                 self.complete = False
                 return "hextet must be between 0 and ffff"
