@@ -48,7 +48,7 @@ def parse(tokens: Deque[Token]):
             atom  = ParseUnaryOperator(op_head.token, right)
         else:
             if not len(operands) > 1:
-                raise ParserError(op_head.token, "missing operand")
+                raise ParserError(op_head.token, "missing binary operand")
             right = operands.pop()
             left  = operands.pop()
             atom  = ParseBinaryOperator(op_head.token, left, right)
