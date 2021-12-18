@@ -312,10 +312,6 @@ class ParseIPv4(ParseAtom):
     def _bool(self):
         return ParseBool(True)
 
-    def _equal(self, other: ParseAtom) -> "ParseBool":
-        return (isinstance(other, ParseCIDRv4)
-            and self._ip == other._ip)
-
     def _div(self, other: ParseAtom) -> ParseAtom:
         if isinstance(other, ParseInteger):
             return ParseCIDRv4(self._ip, other.value)
