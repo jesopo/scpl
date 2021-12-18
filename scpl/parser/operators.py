@@ -34,7 +34,10 @@ class ParseBinaryOperator(ParseOperator):
         left  = self.left.eval(vars)
         right = self.right.eval(vars)
 
-        if self.token.text == "==":
+        atom: ParseAtom
+        if self.token is None:
+            raise ValueError("operator token is None")
+        elif self.token.text == "==":
             atom = left._equal(right)
         elif self.token.text == "&&":
             atom = left._bool()._and(right)
