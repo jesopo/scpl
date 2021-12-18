@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing      import List, Optional, Sequence
+from typing      import Iterator, List, Optional, Sequence
 
 @dataclass
 class Operator:
@@ -33,9 +33,8 @@ OPERATORS_UNARY = {
 def find_unescaped(
         s: str,
         c: str
-        ) -> Sequence[int]:
+        ) -> Iterator[int]:
 
-    indexes: List[int] = []
     i = 0
 
     while i < len(s):
@@ -44,10 +43,7 @@ def find_unescaped(
             i += 1
         elif c2 == c:
             yield i
-            indexes.append(i)
         i += 1
-
-    return indexes
 
 def find_unused_delimiter(
         s:     str,
@@ -73,7 +69,7 @@ def with_delimiter(
         delim  = chars[0]
         found  = find_unescaped(s, delim)
         rdelim = f"\\{delim}"
-        for index in reversed(found):
+        for index in reversed(list(found)):
             s = s[:index] + rdelim + s[index+1:]
 
     return f"{delim}{s}{delim}"
