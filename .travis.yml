@@ -4,6 +4,8 @@ python:
   - "3.9"
   - "3.9-dev"
   - "nightly"
+install:
+  - pip3 install mypy
 script:
   - mypy scpl
   - python3 -m unittest test
