@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing      import Iterator, Optional, Sequence
+from typing      import List, Optional, Sequence
 
 @dataclass
 class Operator:
@@ -33,7 +33,7 @@ OPERATORS_UNARY = {
 def find_unescaped(
         s: str,
         c: str
-        ) -> Iterator[int]:
+        ) -> Sequence[int]:
 
     indexes: List[int] = []
     i = 0
