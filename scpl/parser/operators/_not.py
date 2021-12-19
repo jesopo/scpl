@@ -1,28 +1,32 @@
+from .common import ParseUnaryOperator
 from ..operands import *
 
-class ParseUnaryNotString(ParseBool):
+class ParseUnaryNotString(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseString):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"Not({self._atom!r})"
-    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
-        return ParseBool(not bool(self._atom.value))
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+        return ParseBool(not bool(self._atom.eval(vars).value))
 
-class ParseUnaryNotInteger(ParseBool):
+class ParseUnaryNotInteger(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseInteger):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"Not({self._atom!r})"
-    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
-        return ParseBool(not bool(self._atom.value))
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+        return ParseBool(not bool(self._atom.eval(vars).value))
 
-class ParseUnaryNotFloat(ParseBool):
+class ParseUnaryNotFloat(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseFloat):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"Not({self._atom!r})"
-    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
-        return ParseBool(not bool(self._atom.value))
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+        return ParseBool(not bool(self._atom.eval(vars).value))
 
 def find_unary_not(atom: ParseAtom):
     if isinstance(atom, ParseString):

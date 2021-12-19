@@ -28,15 +28,6 @@ class ParseAtom:
     def is_constant(self) -> bool:
         return True
 
-    def eval(self, variables: Dict[str, "ParseAtom"]) -> "ParseAtom":
-        return self
-
-    def precompile(self):
-        if self.is_constant():
-            return self.eval({})
-        else:
-            return self
-
 class ParseBool(ParseAtom):
     def __init__(self, value: bool):
         self.value = value
@@ -50,26 +41,8 @@ class ParseBool(ParseAtom):
         atom.token = token
         return atom
 
-class ParseVariable(ParseAtom):
-    def __init__(self, name: str):
-        self.name = name
-    def __repr__(self) -> str:
-        return f"Variable({self.name})"
-
-    @staticmethod
-    def from_token(token: Token) -> "ParseVariable":
-        atom = ParseVariable(token.text)
-        atom.token = token
-        return atom
-
-    def is_constant(self) -> bool:
-        return False
-
-    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
-        if self.name in variables:
-            return variables[self.name]
-        else:
-            raise NameError(self.name)
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseBool":
+        return self
 
 class ParseInteger(ParseAtom):
     def __init__(self, value: int):
@@ -83,6 +56,9 @@ class ParseInteger(ParseAtom):
         atom.token = token
         return atom
 
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseInteger":
+        return self
+
 class ParseFloat(ParseAtom):
     def __init__(self, value: float):
         self.value = value
@@ -94,6 +70,9 @@ class ParseFloat(ParseAtom):
         atom = ParseFloat(float(token.text))
         atom.token = token
         return atom
+
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseFloat":
+        return self
 
 class ParseString(ParseAtom):
     def __init__(self,
@@ -114,6 +93,9 @@ class ParseString(ParseAtom):
         atom = ParseString(token.text[0], token.text[1:-1])
         atom.token = token
         return atom
+
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseString":
+        return self
 
 class ParseRegex(ParseAtom):
     def __init__(self,
@@ -144,6 +126,9 @@ class ParseRegex(ParseAtom):
         atom.token = token
         return atom
 
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseRegex":
+        return self
+
 class ParseCIDR(ParseAtom):
     def __init__(self,
             network: int,
@@ -168,6 +153,9 @@ class ParseCIDRv4(ParseCIDR):
         ntop  = inet_ntop(AF_INET, bytes)
         return f"CIDR({ntop}/{self.prefix})"
 
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDRv4":
+        return self
+
 class ParseCIDRv6(ParseCIDR):
     def __init__(self,
             network: int,
@@ -181,6 +169,9 @@ class ParseCIDRv6(ParseCIDR):
         bytes = pack("!2Q", high, low)
         ntop  = inet_ntop(AF_INET6, bytes)
         return f"CIDR({ntop}/{self.prefix})"
+
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDRv6":
+        return self
 
 class ParseIPv4(ParseAtom):
     def __init__(self, ip: int):
@@ -196,6 +187,9 @@ class ParseIPv4(ParseAtom):
         atom   = ParseIPv4(ip)
         atom.token = token
         return atom
+
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv4":
+        return self
 
 class ParseIPv6(ParseAtom):
     def __init__(self, ip: int):
@@ -214,6 +208,9 @@ class ParseIPv6(ParseAtom):
         atom = ParseIPv6(integer)
         atom.token = token
         return atom
+
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv6":
+        return self
 
 KEYWORDS: Dict[str, Type[ParseAtom]] = {
     "true":  ParseBool,

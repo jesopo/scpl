@@ -1,7 +1,7 @@
-from typing import Dict, Optional
+from typing import cast, Dict, Optional
 from ..operands import *
 
-class ParseUnaryGet(ParseAtom):
+class ParseVariable(ParseAtom):
     def __init__(self, name: str):
         self.name = name
 
@@ -11,37 +11,40 @@ class ParseUnaryGet(ParseAtom):
     def is_constant(self) -> bool:
         return False
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
-        return variables[self.name]
-
-class ParseUnaryGetString(ParseUnaryGet, ParseString):
-    pass
-class ParseUnaryGetInteger(ParseUnaryGet, ParseInteger):
-    pass
-class ParseUnaryGetFloat(ParseUnaryGet, ParseFloat):
-    pass
-class ParseUnaryGetRegex(ParseUnaryGet, ParseRegex):
-    pass
-class ParseUnaryGetIPv4(ParseUnaryGet, ParseIPv4):
-    pass
-class ParseUnaryGetIPv6(ParseUnaryGet, ParseIPv6):
-    pass
+class ParseVariableString(ParseVariable, ParseString):
+    def eval(self, variables: Dict[str, ParseAtom]) -> ParseString:
+        return cast(ParseString, variables[self.name])
+class ParseVariableInteger(ParseVariable, ParseInteger):
+    def eval(self, variables: Dict[str, ParseAtom]) -> ParseInteger:
+        return cast(ParseInteger, variables[self.name])
+class ParseVariableFloat(ParseVariable, ParseFloat):
+    def eval(self, variables: Dict[str, ParseAtom]) -> ParseFloat:
+        return cast(ParseFloat, variables[self.name])
+class ParseVariableRegex(ParseVariable, ParseRegex):
+    def eval(self, variables: Dict[str, ParseAtom]) -> ParseRegex:
+        return cast(ParseRegex, variables[self.name])
+class ParseVariableIPv4(ParseVariable, ParseIPv4):
+    def eval(self, variables: Dict[str, ParseAtom]) -> ParseIPv4:
+        return cast(ParseIPv4, variables[self.name])
+class ParseVariableIPv6(ParseVariable, ParseIPv6):
+    def eval(self, variables: Dict[str, ParseAtom]) -> ParseIPv6:
+        return cast(ParseIPv6, variables[self.name])
 
 def find_variable(
         name: str, types: Dict[str, type]
         ) -> Optional[ParseAtom]:
 
     if types[name] == ParseString:
-        return ParseUnaryGetString(name)
+        return ParseVariableString(name)
     elif types[name] == ParseInteger:
-        return ParseUnaryGetInteger(name)
+        return ParseVariableInteger(name)
     elif types[name] == ParseFloat:
-        return ParseUnaryGetFloat(name)
+        return ParseVariableFloat(name)
     elif types[name] == ParseRegex:
-        return ParseUnaryGetRegex(name)
+        return ParseVariableRegex(name)
     elif types[name] == ParseIPv4:
-        return ParseUnaryGetIPv4(name)
+        return ParseVariableIPv4(name)
     elif types[name] == ParseIPv6:
-        return ParseUnaryGetIPv6(name)
+        return ParseVariableIPv6(name)
     else:
         return None

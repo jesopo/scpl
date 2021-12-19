@@ -22,8 +22,8 @@ def main_parser(line: str, types: Dict[str, type]) -> ParseAtom:
         print(f"ast     : {ast!r}")
         print(f"constant: {ast.is_constant()!r}")
 
-        ast = ast.precompile()
-        print(f"precomp : {ast!r}")
+        #ast = ast.precompile()
+        #print(f"precomp : {ast!r}")
         return ast
 
 if __name__ == "__main__":

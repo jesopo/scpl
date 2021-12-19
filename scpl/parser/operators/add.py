@@ -1,52 +1,60 @@
+from .common import ParseBinaryOperator
 from ..operands import *
 
-class ParseBinaryAddIntegerInteger(ParseInteger):
+class ParseBinaryAddIntegerInteger(ParseBinaryOperator, ParseInteger):
     def __init__(self, left: ParseInteger, right: ParseInteger):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:
         return f"Add({self._left!r}, {self._right!r})"
-    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
-        return ParseInteger(self._left.value + self._right.value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
+        return ParseInteger(self._left.eval(vars).value + self._right.eval(vars).value)
 
-class ParseBinaryAddFloatFloat(ParseFloat):
+class ParseBinaryAddFloatFloat(ParseBinaryOperator, ParseFloat):
     def __init__(self, left: ParseFloat, right: ParseFloat):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:
         return f"Add({self._left!r}, {self._right!r})"
-    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
-        return ParseFloat(self._left.value + self._right.value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
+        return ParseFloat(self._left.eval(vars).value + self._right.eval(vars).value)
 
-class ParseBinaryAddStringString(ParseString):
+class ParseBinaryAddStringString(ParseBinaryOperator, ParseString):
     def __init__(self, left: ParseString, right: ParseString):
+        super().__init__(self, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:
         return f"Add({self._left!r}, {self._right!r})"
-    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
-        return ParseString(None, self._left.value + self._right.value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseString:
+        return ParseString(None, self._left.eval(vars).value + self._right.eval(vars).value)
 
-class ParseBinaryAddRegexRegex(ParseRegex):
+class ParseBinaryAddRegexRegex(ParseBinaryOperator, ParseRegex):
     def __init__(self, left: ParseRegex, right: ParseRegex):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:
         return f"Add({self._left!r}, {self._right!r})"
-    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
-        common_flags = self._left.flags & self._right.flags
-        regex_1      = self._left.pattern
-        regex_2      = self._right.pattern
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseRegex:
+        left = self._left.eval(vars)
+        right = self._right.eval(vars)
 
-        if uncommon := self._left.flags - common_flags:
+        common_flags = left.flags & right.flags
+        regex_1      = left.pattern
+        regex_2      = right.pattern
+
+        if uncommon := left.flags - common_flags:
             regex_1 = f"(?{''.join(uncommon)}:{regex_1})"
-        if uncommon := self._right.flags - common_flags:
+        if uncommon := right.flags - common_flags:
             regex_2 = f"(?{''.join(uncommon)}:{regex_2})"
 
         delim: Optional[str] = None
-        if (self._left.delimiter is not None
-                and self._left.delimiter == self._right.delimiter):
-            delim = self._left.delimiter
+        if (left.delimiter is not None
+                and left.delimiter == right.delimiter):
+            delim = left.delimiter
 
         return ParseRegex(delim, regex_1 + regex_2, common_flags)
 class ParseBinaryAddRegexString(ParseBinaryAddRegexRegex):
