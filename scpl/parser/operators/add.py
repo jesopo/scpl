@@ -23,7 +23,7 @@ class ParseBinaryAddFloatFloat(ParseBinaryOperator, ParseFloat):
 
 class ParseBinaryAddStringString(ParseBinaryOperator, ParseString):
     def __init__(self, left: ParseString, right: ParseString):
-        super().__init__(self, right)
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:
