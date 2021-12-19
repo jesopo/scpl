@@ -17,7 +17,7 @@ def main_eval(
         var_tokens     = deque(tokenise(value))
         var_atoms[key] = parse(var_tokens, {})[0]
 
-    ast   = main_parser(line, {k: type(v) for k, v in vars.items()})
+    ast   = main_parser(line, {k: type(v) for k, v in var_atoms.items()})
     start = monotonic()
     try:
         out = ast.eval(var_atoms)
