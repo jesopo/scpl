@@ -6,7 +6,7 @@ class ParseVariable(ParseAtom):
         self.name = name
 
     def __repr__(self) -> str:
-        type = self.__class__.__name__.removeprefix("ParseVariable")
+        type = self.__class__.__name__.replace("ParseVariable", "", 1)
         return f"Get{type}({self.name!r})"
 
     def is_constant(self) -> bool:

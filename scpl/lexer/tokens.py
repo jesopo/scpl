@@ -24,7 +24,7 @@ class Token:
         self.text     = ""
         self.complete = False
     def __repr__(self) -> str:
-        name = self.__class__.__name__.removeprefix("Token")
+        name = self.__class__.__name__.replace("Token", "", 1)
         return f"{name}({self.text})"
     def push(self, next: str) -> Optional[str]:
         return None
