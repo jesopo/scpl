@@ -4,15 +4,14 @@ from typing      import Dict, List
 
 from .parser     import parse, ParserError
 from .operands   import ParseAtom
-from .operators  import ParseOperator
 
 from ..lexer          import tokenise, LexerError
 from ..lexer.__main__ import main_lexer
 
-def main_parser(line: str) -> ParseAtom:
+def main_parser(line: str, types: Dict[str, type]) -> ParseAtom:
     tokens = main_lexer(line)
     try:
-        ast = parse(tokens)[0]
+        ast = parse(tokens, types)[0]
     except ParserError as e:
         print()
         print(line)
@@ -28,4 +27,4 @@ def main_parser(line: str) -> ParseAtom:
         return ast
 
 if __name__ == "__main__":
-    main_parser(sys.argv[1])
+    main_parser(sys.argv[1], {})

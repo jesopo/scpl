@@ -2,7 +2,7 @@ from collections import deque
 from dataclasses import dataclass
 from re          import compile as re_compile
 from re          import escape as re_escape
-from socket      import inet_ntop, inet_pton, AF_INET
+from socket      import inet_ntop, inet_pton, AF_INET, AF_INET6
 from struct      import pack, unpack
 from typing      import Any, Deque, Dict, List, Set, Type
 
@@ -26,39 +26,16 @@ class ParseAtom:
         raise NotImplementedError()
 
     def is_constant(self) -> bool:
-        return self.token is not None
+        return True
 
-    def eval(self,
-            variables: Dict[str, "ParseAtom"]
-            ) -> "ParseAtom":
+    def eval(self, variables: Dict[str, "ParseAtom"]) -> "ParseAtom":
         return self
-    def precompile(self) -> "ParseAtom":
+
+    def precompile(self):
         if self.is_constant():
             return self.eval({})
         else:
             return self
-
-    def _bool(self) -> "ParseBool":
-        raise NotImplementedError()
-
-    def _equal(self, other: "ParseAtom") -> "ParseBool":
-        raise NotImplementedError()
-    def _and(self, other: "ParseAtom") -> "ParseBool":
-        return ParseBool(self._bool().value and other._bool().value)
-    def _or(self, other: "ParseAtom") -> "ParseBool":
-        return ParseBool(self._bool().value or other._bool().value)
-
-    def _add(self, other: "ParseAtom") -> "ParseAtom":
-        raise NotImplementedError()
-    def _subtract(self, other: "ParseAtom") -> "ParseAtom":
-        raise NotImplementedError()
-    def _div(self, other: "ParseAtom") -> "ParseAtom":
-        raise NotImplementedError()
-
-    def _subset_of(self, other: "ParseAtom") -> "ParseBool":
-        raise NotImplementedError()
-    def _match_of(self, other: "ParseAtom") -> "ParseAtom":
-        raise NotImplementedError()
 
 class ParseBool(ParseAtom):
     def __init__(self, value: bool):
@@ -73,17 +50,11 @@ class ParseBool(ParseAtom):
         atom.token = token
         return atom
 
-    def _bool(self) -> bool:
-        return self
-    def _equal(self, other: ParseAtom) -> "ParseBool":
-        return ParseBool(isinstance(other, ParseBool)
-            and self.value == other.value)
-
 class ParseVariable(ParseAtom):
     def __init__(self, name: str):
         self.name = name
     def __repr__(self) -> str:
-        return f"Variable({self.token.text})"
+        return f"Variable({self.name})"
 
     @staticmethod
     def from_token(token: Token) -> "ParseVariable":
@@ -94,10 +65,7 @@ class ParseVariable(ParseAtom):
     def is_constant(self) -> bool:
         return False
 
-    def eval(self,
-            variables: Dict[str, "ParseAtom"]
-            ) -> "ParseAtom":
-
+    def eval(self, variables: Dict[str, ParseAtom]) -> ParseAtom:
         if self.name in variables:
             return variables[self.name]
         else:
@@ -115,24 +83,6 @@ class ParseInteger(ParseAtom):
         atom.token = token
         return atom
 
-    def _bool(self) -> ParseBool:
-        return ParseBool(self.value != 0)
-
-    def _equal(self, other: ParseAtom) -> ParseBool:
-        return ParseBool(isinstance(other, ParseInteger)
-            and self.value == other.value)
-
-    def _add(self, other: ParseAtom) -> ParseAtom:
-        if isinstance(other, ParseInteger):
-            return ParseInteger(self.value + other.value)
-        else:
-            raise ParseBadOperandError()
-    def _subtract(self, other: ParseAtom) -> ParseAtom:
-        if isinstance(other, ParseInteger):
-            return ParseInteger(self.value - other.value)
-        else:
-            raise ParseBadOperandError()
-
 class ParseFloat(ParseAtom):
     def __init__(self, value: float):
         self.value = value
@@ -145,32 +95,17 @@ class ParseFloat(ParseAtom):
         atom.token = token
         return atom
 
-    def _equal(self, other: ParseAtom) -> ParseBool:
-        return ParseBool(isinstance(other, ParseFloat)
-            and self.value == other.value)
-
-    def _add(self, other: ParseAtom) -> ParseAtom:
-        if isinstance(other, ParseFloat):
-            return ParseInteger(self.value + other.value)
-        else:
-            raise ParseBadOperandError()
-    def _subtract(self, other: ParseAtom) -> ParseAtom:
-        if isinstance(other, ParseFloat):
-            return ParseInteger(self.value - other.value)
-        else:
-            raise ParseBadOperandError()
-
 class ParseString(ParseAtom):
     def __init__(self,
             delim: Optional[str],
             value: str):
 
-        self._delim = delim
-        self.value  = value
+        self.delimiter = delim
+        self.value = value
 
     def __repr__(self) -> str:
-        if self._delim is not None:
-            return f"{self._delim}{self.value}{self._delim}"
+        if self.delimiter is not None:
+            return f"{self.delimiter}{self.value}{self.delimiter}"
         else:
             return with_delimiter(self.value, STRING_DELIMS)
 
@@ -180,55 +115,22 @@ class ParseString(ParseAtom):
         atom.token = token
         return atom
 
-    def _bool(self) -> bool:
-        return ParseBool(len(self.value) > 0)
-
-    def _equal(self, other: ParseAtom) -> ParseBool:
-        return ParseBool(isinstance(other, ParseString)
-            and self.value == other.value)
-
-    def _add(self, other: ParseAtom) -> ParseAtom:
-        if isinstance(other, ParseString):
-            delim: Optional[str] = None
-            if self._delim and self._delim == other._delim:
-                delim = self._delim
-            return ParseString(delim, self.value + other.value)
-        elif isinstance(other, ParseRegex):
-            cast_self = ParseRegex(None, re_escape(self.value), set())
-            return cast_self._add(other)
-        else:
-            raise ParseBadOperandError()
-
-    def _subset_of(self, other: ParseAtom) -> ParseBool:
-        if isinstance(other, ParseString):
-            return ParseBool(self.value in other.value)
-        else:
-            raise ParseBadOperandError()
-
-    def _match_of(self, other: ParseAtom) -> ParseAtom:
-        if isinstance(other, ParseRegex):
-            match = other.regex.search(self.value)
-            value = match.group(0) if match else ""
-            return ParseString(None, value)
-        else:
-            raise ParseBadOperandError()
-
 class ParseRegex(ParseAtom):
     def __init__(self,
-            delim: Optional[str],
-            regex: str,
+            delimiter: Optional[str],
+            pattern: str,
             flags: Set[str]):
 
-        self._delim = delim
-        self.flags  = flags
-        self.regex  = re_compile(regex)
-        self._regex = regex
+        self.delimiter = delimiter
+        self.flags = flags
+        self.compiled = re_compile(pattern)
+        self.pattern = pattern
 
     def __repr__(self) -> str:
-        if self._delim is not None:
-            regex = f"{self._delim}{self._regex}{self._delim}"
+        if self.delimiter is not None:
+            regex = f"{self.delimiter}{self.pattern}{self.delimiter}"
         else:
-            regex = with_delimiter(self._regex, REGEX_DELIMS)
+            regex = with_delimiter(self.pattern, REGEX_DELIMS)
 
         flags = ''.join(self.flags)
         return f"Regex({regex}{flags})"
@@ -242,63 +144,49 @@ class ParseRegex(ParseAtom):
         atom.token = token
         return atom
 
-    def _equal(self, other: ParseAtom) -> ParseBool:
-        return ParseBool(isinstance(other, ParseRegex) and
-            self.flags == other.flags and
-            self._regex == other.regex)
+class ParseCIDR(ParseAtom):
+    def __init__(self,
+            network: int,
+            prefix:  int,
+            maxbits: int):
 
-    def _add(self, other: ParseAtom) -> ParseAtom:
-        if isinstance(other, ParseRegex):
-            common_flags = self.flags & other.flags
-            regex_1      = self._regex
-            regex_2      = other._regex
+        self.prefix  = prefix
+        # /8 becomes 0xFF000000
+        self.mask    = 0xFF << (maxbits-prefix)
+        # & here to remove any host bits
+        self.integer = network & self.mask
 
-            if uncommon := self.flags - common_flags:
-                regex_1 = f"(?{''.join(uncommon)}:{regex_1})"
-            if uncommon := other.flags - common_flags:
-                regex_2 = f"(?{''.join(uncommon)}:{regex_2})"
-
-            delim: Optional[str] = None
-            if (self._delim is not None
-                    and self._delim == other._delim):
-                delim = self._delim
-
-            return ParseRegex(delim, regex_1 + regex_2, common_flags)
-        elif isinstance(other, ParseString):
-            cast_other = ParseRegex(None, re_escape(other.value), set())
-            return self._add(cast_other)
-        else:
-            raise ParseBadOperandError()
-
-class ParseCIDRv4(ParseAtom):
+class ParseCIDRv4(ParseCIDR):
     def __init__(self,
             network: int,
             prefix:  int):
 
-        self._prefix  = prefix
-        # /8 becomes 0xFF000000
-        self._mask    = 0xFF << (32-prefix)
-        # & here to remove any host bits
-        self._network = network & self._mask
+        super().__init__(network, prefix, 32)
 
     def __repr__(self) -> str:
-        bytes = pack("!L", self._network)
+        bytes = pack("!L", self.integer)
         ntop  = inet_ntop(AF_INET, bytes)
-        return f"CIDR({ntop}/{self._prefix})"
+        return f"CIDR({ntop}/{self.prefix})"
 
-    def _bool(self) -> bool:
-        return ParseBool(True)
+class ParseCIDRv6(ParseCIDR):
+    def __init__(self,
+            network: int,
+            prefix:  int):
 
-    def _equal(self, other: ParseAtom) -> ParseBool:
-        return ParseBool(isinstance(other, ParseCIDRv4)
-            and self._prefix  == other._prefix
-            and self._network == other._network)
+        super().__init__(network, prefix, 128)
+
+    def __repr__(self) -> str:
+        high = self.integer >> 64
+        low = self.integer & ((1 << 64) - 1)
+        bytes = pack("!2Q", high, low)
+        ntop  = inet_ntop(AF_INET6, bytes)
+        return f"CIDR({ntop}/{self.prefix})"
 
 class ParseIPv4(ParseAtom):
     def __init__(self, ip: int):
-        self._ip = ip
+        self.integer = ip
     def __repr__(self) -> str:
-        bytes = pack("!L", self._ip)
+        bytes = pack("!L", self.integer)
         ntop  = inet_ntop(AF_INET, bytes)
         return f"IPv4({ntop})"
 
@@ -309,21 +197,23 @@ class ParseIPv4(ParseAtom):
         atom.token = token
         return atom
 
-    def _bool(self):
-        return ParseBool(True)
+class ParseIPv6(ParseAtom):
+    def __init__(self, ip: int):
+        self.integer = ip
+    def __repr__(self) -> str:
+        high = self.integer >> 64
+        low = self.integer & ((1 << 64) - 1)
+        bytes = pack("!2Q", high, low)
+        ntop  = inet_ntop(AF_INET6, bytes)
+        return f"IPv6({ntop})"
 
-    def _div(self, other: ParseAtom) -> ParseAtom:
-        if isinstance(other, ParseInteger):
-            return ParseCIDRv4(self._ip, other.value)
-        else:
-            raise ParseBadOperandError()
-
-    def _subset_of(self, other: ParseAtom) -> ParseBool:
-        if isinstance(other, ParseCIDRv4):
-            network = self._ip & other._mask
-            return ParseBool(network == other._network)
-        else:
-            raise ParseBadOperandError()
+    @staticmethod
+    def from_token(token: Token) -> "ParseIPv6":
+        high, low = unpack('!2Q', inet_pton(AF_INET6, token.text))
+        integer = (high << 64) | low
+        atom = ParseIPv6(integer)
+        atom.token = token
+        return atom
 
 KEYWORDS: Dict[str, Type[ParseAtom]] = {
     "true":  ParseBool,

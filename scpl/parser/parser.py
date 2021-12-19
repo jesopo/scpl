@@ -2,7 +2,7 @@ from collections import deque
 from dataclasses import dataclass
 from typing      import Deque, Generic, List, TypeVar
 
-from .operators  import *
+from .operators  import find_binary_operator, find_unary_operator, find_variable
 from .operands   import *
 
 from ..common    import *
@@ -34,7 +34,7 @@ class ParserError(Exception):
         self.token = token
         super().__init__(error)
 
-def parse(tokens: Deque[Token]):
+def parse(tokens: Deque[Token], types: Dict[str, type]):
     operands:  Deque[ParseAtom]        = deque()
     operators: Deque[PreparseOperator] = deque()
 
@@ -45,16 +45,19 @@ def parse(tokens: Deque[Token]):
             if not operands:
                 raise ParserError(op_head.token, "missing unary operand")
             right = operands.pop()
-            atom  = ParseUnaryOperator(op_head.token, right)
+            atom  = find_unary_operator(op_head.token, right)
         else:
             if not len(operands) > 1:
                 raise ParserError(op_head.token, "missing binary operand")
             right = operands.pop()
             left  = operands.pop()
-            atom  = ParseBinaryOperator(op_head.token, left, right)
+            atom  = find_binary_operator(op_head.token, left, right)
 
-        operands.append(atom)
-        return op_head
+        if atom is not None:
+            operands.append(atom)
+            return op_head
+        else:
+            raise ParserError(op_head.token, "invalid operands for operator")
 
     last_is_operator = False
     while tokens:
@@ -77,6 +80,7 @@ def parse(tokens: Deque[Token]):
                     raise ParserError(token, "unexpected closing parenthesis")
 
         elif isinstance(token, TokenOperator):
+            operator: PreparseOperator
             if last_is_operator or not operands:
                 if token.text in OPERATORS_UNARY:
                     operator = PreparseUnaryOperator(token)
@@ -101,7 +105,15 @@ def parse(tokens: Deque[Token]):
                     keyword_type = KEYWORDS[token.text]
                     operands.append(keyword_type.from_token(token))
                 else:
-                    operands.append(ParseVariable.from_token(token))
+                    variable = find_variable(token.text, types)
+                    if not token.text in types:
+                        raise ParserError(token, f"unknown variable {token.text}")
+                    elif (var := find_variable(token.text, types)) is None:
+                        # shouldn't happen
+                        raise ParserError(token, "invalid variable type")
+                    else:
+                        operands.append(var)
+
             elif isinstance(token, TokenNumber):
                 if "." in token.text:
                     operands.append(ParseFloat.from_token(token))
