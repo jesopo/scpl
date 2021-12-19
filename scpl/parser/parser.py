@@ -105,7 +105,6 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
                     keyword_type = KEYWORDS[token.text]
                     operands.append(keyword_type.from_token(token))
                 else:
-                    variable = find_variable(token.text, types)
                     if not token.text in types:
                         raise ParserError(token, f"unknown variable {token.text}")
                     elif (var := find_variable(token.text, types)) is None:
