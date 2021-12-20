@@ -148,7 +148,7 @@ class ParseCIDR(ParseAtom):
 
         self.prefix  = prefix
         # /8 becomes 0xFF000000
-        self.mask    = 0xFF << (maxbits-prefix)
+        self.mask    = ((1 << prefix) - 1) << (maxbits - prefix)
         # & here to remove any host bits
         self.integer = network & self.mask
 
