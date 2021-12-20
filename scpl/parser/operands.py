@@ -143,6 +143,9 @@ class ParseCIDR(ParseAtom):
             prefix:  int,
             maxbits: int):
 
+        if prefix < 0 or prefix > maxbits:
+            raise ValueError(f"invalid prefix length {prefix} (min 0 max {maxbits})")
+
         self.prefix  = prefix
         # /8 becomes 0xFF000000
         self.mask    = 0xFF << (maxbits-prefix)
