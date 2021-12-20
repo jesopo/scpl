@@ -1,7 +1,9 @@
 import unittest
+from ipaddress import ip_address
+
 from scpl.lexer import tokenise
 from scpl.parser import operators, parse
-from scpl.parser import ParseInteger, ParseFloat, ParseString
+from scpl.parser import ParseInteger, ParseIPv4, ParseIPv6, ParseFloat, ParseString
 
 class ParserTestString(unittest.TestCase):
     def test_lone(self):
@@ -37,3 +39,25 @@ class ParserTestFloat(unittest.TestCase):
     def test_addfloat(self):
         atom = parse(tokenise('1.0 + 1.0'), {})[0]
         self.assertEqual(atom.__class__, operators.add.ParseBinaryAddFloatFloat)
+
+class ParserTestIPv4(unittest.TestCase):
+    def test_lone(self):
+        addr = "10.84.1.1"
+        atom = parse(tokenise(addr), {})[0]
+        self.assertIsInstance(atom, ParseIPv4)
+        self.assertEqual(atom.integer, int(ip_address(addr)))
+
+    def test_divideinteger(self):
+        atom = parse(tokenise("10.84.1.1/16"), {})[0]
+        self.assertIsInstance(atom, operators.divide.ParseBinaryDivideIPv4Integer)
+
+class ParserTestIPv6(unittest.TestCase):
+    def test_lone(self):
+        addr = "fd84:9d71:8b8:1::1"
+        atom = parse(tokenise(addr), {})[0]
+        self.assertIsInstance(atom, ParseIPv6)
+        self.assertEqual(atom.integer, int(ip_address(addr)))
+
+    def test_divideinteger(self):
+        atom = parse(tokenise("fd84:9d71:8b8:1::1/48"), {})[0]
+        self.assertIsInstance(atom, operators.divide.ParseBinaryDivideIPv6Integer)
