@@ -126,6 +126,10 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
                 operands.append(ParseRegex.from_token(token))
             elif isinstance(token, TokenIPv4):
                 operands.append(ParseIPv4.from_token(token))
+            elif isinstance(token, TokenIPv6):
+                operands.append(ParseIPv6.from_token(token))
+            else:
+                raise ParserError(token, "unknown token")
         else:
             raise ParserError(token, "missing operator")
 
