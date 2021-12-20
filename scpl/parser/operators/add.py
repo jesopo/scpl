@@ -29,7 +29,15 @@ class ParseBinaryAddStringString(ParseBinaryOperator, ParseString):
     def __repr__(self) -> str:
         return f"Add({self._left!r}, {self._right!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseString:
-        return ParseString(None, self._left.eval(vars).value + self._right.eval(vars).value)
+        left = self._left.eval(vars)
+        right = self._right.eval(vars)
+
+        delim: Optional[str] = None
+        if (left.delimiter is not None
+                and left.delimiter == right.delimiter):
+            delim = left.delimiter
+
+        return ParseString(delim, left.value + right.value)
 
 class ParseBinaryAddRegexRegex(ParseBinaryOperator, ParseRegex):
     def __init__(self, left: ParseRegex, right: ParseRegex):
