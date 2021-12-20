@@ -155,9 +155,15 @@ class LexerTestIPv6(unittest.TestCase):
         self.assertEqual(token.text, addr)
 
     def test_collapse(self):
-        token = tokenise("1:2:3::4")[0]
+        token = tokenise("fd84:9d71:8b8:1::1")[0]
         self.assertEqual(token.__class__, TokenIPv6)
-        self.assertEqual(token.text, "1:2:3::4")
+        self.assertEqual(token.text, "fd84:9d71:8b8:1::1")
+
+    def test_stop(self):
+        tokens = tokenise("fd84:9d71:8b8:1::1/")
+        self.assertEqual(len(tokens), 2)
+        self.assertIsInstance(tokens[0], TokenIPv6)
+        self.assertEqual(tokens[0].text, "fd84:9d71:8b8:1::1")
 
     def test_invalid(self):
         self.assertRaises(LexerError, lambda: tokenise("1::1::1"))
