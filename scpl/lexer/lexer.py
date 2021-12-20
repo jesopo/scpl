@@ -48,6 +48,7 @@ def tokenise(expression: str) -> Deque[Token]:
                 TokenOperator(char_index, token_last),
                 TokenSpace(char_index, token_last),
                 TokenNumber(char_index, token_last),
+                TokenHex(char_index, token_last),
             ]
 
         token_text += char_stream[0]

@@ -59,6 +59,14 @@ class ParseInteger(ParseAtom):
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseInteger":
         return self
 
+# sneaky little trick. convert hex to integer
+class ParseHex(ParseInteger):
+    @staticmethod
+    def from_token(token: Token) -> ParseInteger:
+        atom = ParseInteger(int(token.text[2:], 16))
+        atom.token = token
+        return atom
+
 class ParseFloat(ParseAtom):
     def __init__(self, value: float):
         self.value = value

@@ -102,6 +102,32 @@ class TokenNumber(Token):
                 self.complete = False
             return "invalid number character"
 
+class TokenHex(Token):
+    def push(self, next: str) -> Optional[str]:
+        if not self.text:
+            if next == "0":
+                self.text += next
+                return None
+            else:
+                return "not a hex literal"
+        elif self.text == "0":
+            if next == "x":
+                self.text += next
+                return None
+            else:
+                return "not a hex literal"
+        elif len(self.text) > 1:
+            if next in CHARS_HEX:
+                self.text += next
+                self.complete = True
+                return None
+            else:
+                if next in CHARS_WORD:
+                    self.complete = False
+                return "not a hex digit"
+        else:
+            return "not a hex literal"
+
 class TokenString(Token):
     def __init__(self,
             index: int,

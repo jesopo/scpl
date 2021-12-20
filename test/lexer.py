@@ -1,7 +1,7 @@
 import unittest
 from scpl.lexer import LexerError, LexerUnfinishedError, tokenise
-from scpl.lexer import (TokenIPv4, TokenIPv6, TokenNumber, TokenOperator,
-    TokenRegex, TokenSpace, TokenString, TokenWord)
+from scpl.lexer import (TokenHex, TokenIPv4, TokenIPv6, TokenNumber,
+    TokenOperator, TokenRegex, TokenSpace, TokenString, TokenWord)
 from scpl.common import OPERATORS_BINARY, OPERATORS_UNARY
 
 class LexerTestString(unittest.TestCase):
@@ -62,6 +62,27 @@ class LexerTestNumber(unittest.TestCase):
         self.assertRaises(LexerError, lambda: tokenise("1.2.3"))
         self.assertRaises(LexerError, lambda: tokenise("1.."))
         self.assertRaises(LexerError, lambda: tokenise("1.a"))
+
+class LexerTestHex(unittest.TestCase):
+    def test_onechar(self):
+        token = tokenise("0xf")[0]
+        self.assertIsInstance(token, TokenHex)
+        self.assertEqual(token.text, "0xf")
+
+    def test_manychar(self):
+        token = tokenise("0x1234567890abcdef")[0]
+        self.assertIsInstance(token, TokenHex)
+        self.assertEqual(token.text, "0x1234567890abcdef")
+
+    def test_unfinished(self):
+        with self.assertRaises(LexerUnfinishedError) as cm:
+            tokenise("0x")
+        self.assertIsInstance(cm.exception.token, TokenHex)
+        self.assertEqual(cm.exception.token.text, "0x")
+
+    def test_invalid(self):
+        self.assertRaises(LexerError, lambda: tokenise("0x-"))
+        self.assertRaises(LexerError, lambda: tokenise("0xg"))
 
 class LexerTestOperators(unittest.TestCase):
     def test_binary(self):
