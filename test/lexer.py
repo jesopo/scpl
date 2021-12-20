@@ -31,7 +31,10 @@ class LexerTestString(unittest.TestCase):
         self.assertEqual(token.text, '"asd\\"asd"')
 
     def test_unfinished(self):
-        self.assertRaises(LexerUnfinishedError, lambda: tokenise("'asd"))
+        with self.assertRaises(LexerUnfinishedError) as cm:
+            tokenise("'asd")
+        self.assertIsInstance(cm.exception.token, TokenString)
+        self.assertEqual(cm.exception.token.text, "'asd")
 
 class LexerTestNumber(unittest.TestCase):
     def test_int(self):
@@ -50,7 +53,10 @@ class LexerTestNumber(unittest.TestCase):
         self.assertEqual(token.text, '.23')
 
     def test_unfinished(self):
-        self.assertRaises(LexerUnfinishedError, lambda: tokenise("1."))
+        with self.assertRaises(LexerUnfinishedError) as cm:
+            tokenise("1.")
+        self.assertIsInstance(cm.exception.token, TokenNumber)
+        self.assertEqual(cm.exception.token.text, "1.")
 
     def test_invalid(self):
         self.assertRaises(LexerError, lambda: tokenise("1.2.3"))
@@ -96,7 +102,10 @@ class LexerTestRegex(unittest.TestCase):
         self.assertEqual(tokens[4].__class__, TokenOperator)
 
     def test_unfinished(self):
-        self.assertRaises(LexerUnfinishedError, lambda: tokenise("/asd"))
+        with self.assertRaises(LexerUnfinishedError) as cm:
+            tokenise("/asd")
+        self.assertIsInstance(cm.exception.token, TokenRegex)
+        self.assertEqual(cm.exception.token.text, "/asd")
 
 class LexerTestIPv4(unittest.TestCase):
     def test_compact(self):
