@@ -3,7 +3,7 @@ from scpl.lexer import tokenise
 from scpl.parser import parse
 from scpl.parser import ParseInteger, ParseFloat, ParseRegex, ParseString
 
-class ParserTestString(unittest.TestCase):
+class EvalTestString(unittest.TestCase):
     def test_addstring(self):
         atom = parse(tokenise('"asd" + "asd"'), {})[0].eval({})
         self.assertIsInstance(atom, ParseString)
