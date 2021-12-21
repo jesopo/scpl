@@ -1,3 +1,4 @@
+from re import escape as re_escape
 from typing import Dict
 from ..operands import ParseAtom, ParseFloat, ParseInteger, ParseRegex, ParseString
 
