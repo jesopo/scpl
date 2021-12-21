@@ -27,7 +27,6 @@ def tokenise(expression: str) -> Deque[Token]:
 
     tokens_finished:   Deque[Token] = deque()
     tokens_unfinished: List[Token] = []
-    tokens_broken:     List[Tuple[Token, str]] = []
 
     token_text = ""
     token_last: Optional[Token] = None
@@ -37,7 +36,6 @@ def tokenise(expression: str) -> Deque[Token]:
 
         if not tokens_unfinished:
             token_text = ""
-            tokens_broken     = []
             tokens_unfinished = [
                 TokenRegex(char_index, token_last),
                 TokenString(char_index, token_last),
@@ -53,13 +51,10 @@ def tokenise(expression: str) -> Deque[Token]:
 
         token_text += char_stream[0]
         for token in list(tokens_unfinished):
-            was_complete = token.complete
-            error        = token.push(char_stream[0])
+            error = token.push(char_stream[0])
 
             if error is not None or not char_stream[0]:
                 tokens_unfinished.remove(token)
-                if was_complete and not token.complete:
-                    tokens_broken.append((token, error))
 
                 if len(tokens_unfinished) == 0:
                     # no more valid tokens left
@@ -71,10 +66,6 @@ def tokenise(expression: str) -> Deque[Token]:
                             token_last = token
                     elif token_text:
                         raise LexerUnfinishedError(token)
-                    elif tokens_broken:
-                        btoken, berror = tokens_broken[0]
-                        btoken_index   = btoken.index + len(btoken.text)
-                        raise LexerError(btoken_index, berror)
                     elif char_stream[0]:
                         # unrecognised single character
                         raise LexerError(char_index, "unknown token")
