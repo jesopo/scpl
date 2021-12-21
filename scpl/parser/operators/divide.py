@@ -1,5 +1,7 @@
+from typing import Dict
 from .common import ParseBinaryOperator
-from ..operands import *
+from ..operands import (ParseAtom, ParseCIDRv4, ParseCIDRv6, ParseIPv4,
+    ParseIPv6, ParseFloat, ParseInteger)
 from .cast import ParseCastIntegerFloat
 
 class ParseBinaryDivideFloatFloat(ParseBinaryOperator, ParseFloat):

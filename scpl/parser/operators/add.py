@@ -1,5 +1,7 @@
+from typing import Dict, Optional
 from .common import ParseBinaryOperator
-from ..operands import *
+from ..operands import (ParseAtom, ParseFloat, ParseInteger, ParseRegex,
+    ParseString)
 from .cast import ParseCastStringRegex
 
 class ParseBinaryAddIntegerInteger(ParseBinaryOperator, ParseInteger):

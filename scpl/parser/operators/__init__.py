@@ -1,5 +1,8 @@
+from typing import Optional
+
 from .add import find_binary_add
-from ..operands import *
+from ..operands import ParseAtom
+from ...lexer import Token
 
 from .common import ParseOperator
 

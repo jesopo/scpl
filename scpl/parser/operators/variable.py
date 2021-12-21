@@ -1,5 +1,6 @@
 from typing import cast, Dict, Optional
-from ..operands import *
+from ..operands import (ParseAtom, ParseFloat, ParseIPv4, ParseIPv6,
+    ParseInteger, ParseRegex, ParseString)
 
 class ParseVariable(ParseAtom):
     def __init__(self, name: str):

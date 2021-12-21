@@ -1,10 +1,16 @@
+from enum        import Enum
 from dataclasses import dataclass
 from typing      import Iterator, List, Optional, Sequence
+
+class Associativity(Enum):
+    LEFT = 0
+    RIGHT = 1
 
 @dataclass
 class Operator:
     weight: int
-    name:   str
+    name: str
+    associativity: Associativity = Associativity.LEFT
 
 OPERATORS_BINARY = {
     "&&": Operator(1, "And"),
@@ -25,9 +31,9 @@ OPERATORS_BINARY = {
 }
 
 OPERATORS_UNARY = {
-    "!":  Operator(4, "Not"),
-    "+":  Operator(4, "Pos"),
-    "-":  Operator(4, "Neg"),
+    "!":  Operator(4, "Not", Associativity.RIGHT),
+    "+":  Operator(4, "Pos", Associativity.RIGHT),
+    "-":  Operator(4, "Neg", Associativity.RIGHT)
 }
 
 def find_unescaped(

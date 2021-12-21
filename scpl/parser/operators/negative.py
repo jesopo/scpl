@@ -1,5 +1,6 @@
+from typing import Dict
 from .common import ParseUnaryOperator
-from ..operands import *
+from ..operands import ParseAtom, ParseFloat, ParseInteger
 
 class ParseUnaryNegativeInteger(ParseUnaryOperator, ParseInteger):
     def __init__(self, atom: ParseInteger):
