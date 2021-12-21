@@ -1,4 +1,4 @@
-import sys
+import json, sys
 from collections import deque
 from time        import monotonic
 from typing      import Dict, List
@@ -30,4 +30,11 @@ def main_parser(line: str, types: Dict[str, type]) -> ParseAtom:
         return ast
 
 if __name__ == "__main__":
-    main_parser(sys.argv[1], {})
+
+    vars: Dict[str, type] = {}
+    if len(sys.argv) > 2:
+        for key, value in json.loads(sys.argv[2]).items():
+            tokens    = deque(tokenise(value))
+            vars[key] = type(parse(tokens, {})[0])
+
+    main_parser(sys.argv[1], vars)
