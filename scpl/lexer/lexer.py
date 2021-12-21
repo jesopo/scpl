@@ -15,7 +15,7 @@ class LexerError(Exception):
 class LexerUnfinishedError(LexerError):
     def __init__(self, token: Token):
         self.token = token
-        super().__init__(token.index, "unfinished token")
+        super().__init__(token.index, f"unfinished {type(token).__name__}")
 
 def tokenise(expression: str) -> Deque[Token]:
     char_stream       = deque(expression)
