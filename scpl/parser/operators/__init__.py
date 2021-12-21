@@ -9,11 +9,10 @@ from .common import ParseOperator
 # binary
 from .add import find_binary_add
 from .divide import find_binary_divide
-from .bools import find_binary_and, find_binary_or
+from .bools import find_binary_and, find_binary_or, find_unary_not
 from .match import find_binary_match
 
 # unary
-from ._not import find_unary_not
 from .negative import find_unary_negative
 from .positive import find_unary_positive
 

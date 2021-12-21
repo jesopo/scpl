@@ -1,5 +1,5 @@
 from typing import Dict, Optional, Tuple
-from .common import ParseBinaryOperator
+from .common import ParseBinaryOperator, ParseUnaryOperator
 from .cast import find_cast_bool
 from ..operands import ParseAtom, ParseBool
 
@@ -30,6 +30,11 @@ def _double_cast(
         return (left, right)
     else:
         return None
+def _cast(aatom: ParseAtom) -> Optional[ParseBool]:
+    if (atom := find_cast_bool(aatom)) is not None:
+        return atom
+    else:
+        return None
 
 def find_binary_and(left: ParseAtom, right: ParseAtom) -> Optional[ParseBool]:
     if (dcast := _double_cast(left, right)) is not None:
@@ -40,5 +45,19 @@ def find_binary_and(left: ParseAtom, right: ParseAtom) -> Optional[ParseBool]:
 def find_binary_or(left: ParseAtom, right: ParseAtom) -> Optional[ParseBool]:
     if (dcast := _double_cast(left, right)) is not None:
         return ParseBinaryOr(*dcast)
+    else:
+        return None
+
+class ParseUnaryNot(ParseUnaryOperator, ParseBool):
+    def __init__(self, atom: ParseBool):
+        self._atom = atom
+    def __repr__(self) -> str:
+        return f"Not({self._atom!r})"
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+        return ParseBool(not self._atom.eval(vars).value)
+
+def find_unary_not(atom: ParseAtom) -> Optional[ParseBool]:
+    if (cast := _cast(atom)) is not None:
+        return ParseUnaryNot(cast)
     else:
         return None
