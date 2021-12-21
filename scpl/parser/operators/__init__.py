@@ -15,6 +15,7 @@ from .match import find_binary_match
 # unary
 from ._not import find_unary_not
 from .negative import find_unary_negative
+from .positive import find_unary_positive
 
 # ✨ special
 from .variable import find_variable
@@ -42,6 +43,8 @@ def find_unary_operator(
 
     if token.text == "-":
         return find_unary_negative(atom)
+    if token.text == "+":
+        return find_unary_positive(atom)
     elif token.text == "!":
         return find_unary_not(atom)
     else:
