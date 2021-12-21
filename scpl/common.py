@@ -25,9 +25,9 @@ OPERATORS_BINARY = {
 }
 
 OPERATORS_UNARY = {
-    "!":  Operator(3, "Not"),
-    "+":  Operator(3, "Pos"),
-    "-":  Operator(3, "Neg"),
+    "!":  Operator(4, "Not"),
+    "+":  Operator(4, "Pos"),
+    "-":  Operator(4, "Neg"),
 }
 
 def find_unescaped(
