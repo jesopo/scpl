@@ -1,5 +1,6 @@
 from .common import ParseBinaryOperator
 from ..operands import *
+from .cast import ParseCastIntegerFloat
 
 class ParseBinaryDivideFloatFloat(ParseBinaryOperator, ParseFloat):
     def __init__(self, left: ParseFloat, right: ParseFloat):
@@ -10,9 +11,10 @@ class ParseBinaryDivideFloatFloat(ParseBinaryOperator, ParseFloat):
         return f"Divide({self._left!r}, {self._right!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
         return ParseFloat(self._left.eval(vars).value / self._right.eval(vars).value)
+
 class ParseBinaryDivideIntegerInteger(ParseBinaryDivideFloatFloat):
     def __init__(self, left: ParseInteger, right: ParseInteger):
-        super().__init__(ParseFloat(float(left.value)), ParseFloat(float(right.value)))
+        super().__init__(ParseCastIntegerFloat(left), ParseCastIntegerFloat(right))
 
 class ParseBinaryDivideIPv4Integer(ParseBinaryOperator, ParseCIDRv4):
     def __init__(self, left: ParseIPv4, right: ParseInteger):

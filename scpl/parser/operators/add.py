@@ -1,5 +1,6 @@
 from .common import ParseBinaryOperator
 from ..operands import *
+from .cast import ParseCastStringRegex
 
 class ParseBinaryAddIntegerInteger(ParseBinaryOperator, ParseInteger):
     def __init__(self, left: ParseInteger, right: ParseInteger):
@@ -67,10 +68,10 @@ class ParseBinaryAddRegexRegex(ParseBinaryOperator, ParseRegex):
         return ParseRegex(delim, regex_1 + regex_2, common_flags)
 class ParseBinaryAddRegexString(ParseBinaryAddRegexRegex):
     def __init__(self, left: ParseRegex, right: ParseString):
-        super().__init__(left, ParseRegex(None, re_escape(right.value), set()))
+        super().__init__(left, ParseCastStringRegex(right))
 class ParseBinaryAddStringRegex(ParseBinaryAddRegexRegex):
     def __init__(self, left: ParseString, right: ParseRegex):
-        super().__init__(ParseRegex(None, re_escape(left.value), set()), right)
+        super().__init__(ParseCastStringRegex(left), right)
 
 def find_binary_add(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
     if isinstance(left, ParseInteger):
