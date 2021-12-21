@@ -2,7 +2,7 @@ from typing import Dict, Optional
 from .common import ParseBinaryOperator
 from ..operands import (ParseAtom, ParseFloat, ParseInteger, ParseRegex,
     ParseString)
-from .cast import ParseCastStringRegex
+from .cast import ParseCastIntegerFloat, ParseCastStringRegex
 
 class ParseBinaryAddIntegerInteger(ParseBinaryOperator, ParseInteger):
     def __init__(self, left: ParseInteger, right: ParseInteger):
@@ -23,6 +23,12 @@ class ParseBinaryAddFloatFloat(ParseBinaryOperator, ParseFloat):
         return f"Add({self._left!r}, {self._right!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
         return ParseFloat(self._left.eval(vars).value + self._right.eval(vars).value)
+class ParseBinaryAddFloatInteger(ParseBinaryAddFloatFloat):
+    def __init__(self, left: ParseFloat, right: ParseInteger):
+        super().__init__(left, ParseCastIntegerFloat(right))
+class ParseBinaryAddIntegerFloat(ParseBinaryAddFloatFloat):
+    def __init__(self, left: ParseInteger, right: ParseFloat):
+        super().__init__(ParseCastIntegerFloat(left), right)
 
 class ParseBinaryAddStringString(ParseBinaryOperator, ParseString):
     def __init__(self, left: ParseString, right: ParseString):
@@ -79,11 +85,15 @@ def find_binary_add(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
     if isinstance(left, ParseInteger):
         if isinstance(right, ParseInteger):
             return ParseBinaryAddIntegerInteger(left, right)
+        elif isinstance(right, ParseFloat):
+            return ParseBinaryAddIntegerFloat(left, right)
         else:
             return None
     elif isinstance(left, ParseFloat):
         if isinstance(right, ParseFloat):
             return ParseBinaryAddFloatFloat(left, right)
+        elif isinstance(right, ParseInteger):
+            return ParseBinaryAddFloatInteger(left, right)
         else:
             return None
     elif isinstance(left, ParseString):
