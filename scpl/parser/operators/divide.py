@@ -17,6 +17,12 @@ class ParseBinaryDivideFloatFloat(ParseBinaryOperator, ParseFloat):
 class ParseBinaryDivideIntegerInteger(ParseBinaryDivideFloatFloat):
     def __init__(self, left: ParseInteger, right: ParseInteger):
         super().__init__(ParseCastIntegerFloat(left), ParseCastIntegerFloat(right))
+class ParseBinaryDivideIntegerFloat(ParseBinaryDivideFloatFloat):
+    def __init__(self, left: ParseInteger, right: ParseFloat):
+        super().__init__(ParseCastIntegerFloat(left), right)
+class ParseBinaryDivideFloatInteger(ParseBinaryDivideFloatFloat):
+    def __init__(self, left: ParseFloat, right: ParseInteger):
+        super().__init__(left, ParseCastIntegerFloat(right))
 
 class ParseBinaryDivideIPv4Integer(ParseBinaryOperator, ParseCIDRv4):
     def __init__(self, left: ParseIPv4, right: ParseInteger):
@@ -41,11 +47,15 @@ def find_binary_divide(left: ParseAtom, right: ParseAtom):
     if isinstance(left, ParseFloat):
         if isinstance(right, ParseFloat):
             return ParseBinaryDivideFloatFloat(left, right)
+        elif isinstance(right, ParseInteger):
+            return ParseBinaryDivideFloatInteger(left, right)
         else:
             return None
     elif isinstance(left, ParseInteger):
         if isinstance(right, ParseInteger):
             return ParseBinaryDivideIntegerInteger(left, right)
+        elif isinstance(right, ParseFloat):
+            return ParseBinaryDivideIntegerFloat(left, right)
         else:
             return None
     elif isinstance(left, ParseIPv4):
