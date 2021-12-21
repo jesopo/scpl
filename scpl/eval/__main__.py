@@ -4,7 +4,7 @@ from time        import monotonic
 from typing      import Dict
 
 from ..lexer           import tokenise
-from ..parser          import parse, ParseAtom
+from ..parser          import parse, ParseAtom, ParseOperator
 from ..parser.__main__ import main_parser
 
 def main_eval(
@@ -17,7 +17,11 @@ def main_eval(
         var_tokens     = deque(tokenise(value))
         var_atoms[key] = parse(var_tokens, {})[0]
 
-    ast   = main_parser(line, {k: type(v) for k, v in var_atoms.items()})
+    ast = main_parser(line, {k: type(v) for k, v in var_atoms.items()})
+    if not isinstance(ast, ParseOperator):
+        print(f"nothing to do")
+        sys.exit(1)
+
     start = monotonic()
     try:
         out = ast.eval(var_atoms)

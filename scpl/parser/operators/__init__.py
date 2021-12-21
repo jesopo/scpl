@@ -1,6 +1,8 @@
 from .add import find_binary_add
 from ..operands import *
 
+from .common import ParseOperator
+
 # binary
 from .add import find_binary_add
 from .divide import find_binary_divide
