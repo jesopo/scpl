@@ -6,6 +6,7 @@ from .common import ParseOperator
 # binary
 from .add import find_binary_add
 from .divide import find_binary_divide
+from .match import find_binary_match
 
 # unary
 from ._not import find_unary_not
@@ -22,6 +23,8 @@ def find_binary_operator(
         return find_binary_add(left, right)
     elif token.text == "/":
         return find_binary_divide(left, right)
+    elif token.text == "=~":
+        return find_binary_match(left, right)
     else:
         return None
 
