@@ -48,7 +48,7 @@ class ParseInteger(ParseAtom):
     def __init__(self, value: int):
         self.value = value
     def __repr__(self) -> str:
-        return f"Int({self.value})"
+        return f"Integer({self.value})"
 
     @staticmethod
     def from_token(token: Token) -> "ParseInteger":
