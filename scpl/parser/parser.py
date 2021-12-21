@@ -13,10 +13,14 @@ class PreparseOperator:
         self.token = token
     def __repr__(self) -> str:
         return self.operator().name
-    def weight(self):
-        return self.operator().weight
     def operator(self) -> Operator:
         raise NotImplementedError()
+    def weight(self):
+        return self.operator().weight
+    def is_left(self):
+        return self.operator().associativity == Associativity.LEFT
+    def is_right(self):
+        return self.operator().associativity == Associativity.RIGHT
 class PreparseBinaryOperator(PreparseOperator):
     def operator(self) -> Operator:
         return OPERATORS_BINARY[self.token.text]
@@ -92,9 +96,16 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
                 else:
                     raise ParserError(token, "invalid binary operator")
 
+            weight = operator.weight()
             # shunting yard
-            while operators and operators[-1].weight() >= operator.weight():
-                _pop_op()
+            while operators:
+                head = operators[-1]
+                if ((head.is_left() and head.weight() >= weight)
+                        or (head.is_right() and head.weight() > weight)):
+                    _pop_op()
+                else:
+                    break
+
             operators.append(operator)
             last_is_operator = True
 
