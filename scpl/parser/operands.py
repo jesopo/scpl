@@ -1,10 +1,11 @@
-from collections import deque
+from collections import deque, OrderedDict
 from dataclasses import dataclass
 from re          import compile as re_compile
 from re          import escape as re_escape
 from socket      import inet_ntop, inet_pton, AF_INET, AF_INET6
 from struct      import pack, unpack
 from typing      import Any, Deque, Dict, List, Set, Type
+from typing      import OrderedDict as TOrderedDict
 
 from ..common    import *
 from ..lexer     import *
@@ -64,6 +65,40 @@ class ParseHex(ParseInteger):
     @staticmethod
     def from_token(token: Token) -> ParseInteger:
         atom = ParseInteger(int(token.text[2:], 16))
+        atom.token = token
+        return atom
+
+DURATION_UNITS: TOrderedDict[str, int] = OrderedDict(reversed([
+    ("s", 1),
+    ("m", SECONDS_M := 60),
+    ("h", SECONDS_H := SECONDS_M * 60),
+    ("d", SECONDS_D := SECONDS_H * 24),
+    ("w", SECONDS_W := SECONDS_D * 7)
+]))
+RE_DURATION = re_compile("^(\d+w)?(\d+d)?(\d+h)?(\d+m)?(\d+s)?$")
+
+class ParseDuration(ParseInteger):
+    def __repr__(self) -> str:
+        seconds = self.value
+        out = ""
+        for unit, scale in DURATION_UNITS.items():
+            unit_value, seconds = divmod(seconds, scale)
+            if unit_value > 0:
+                out += f"{unit_value}{unit}"
+
+        return f"Duration({out})"
+
+    @staticmethod
+    def from_token(token: Token) -> "ParseInteger":
+        seconds = 0
+        if (match := RE_DURATION.search(token.text)) is not None:
+            for group in match.groups():
+                if group is not None:
+                    value_s, unit = group[:-1], group[-1]
+                    scale = DURATION_UNITS[unit]
+                    seconds += int(value_s) * scale
+
+        atom = ParseInteger(seconds)
         atom.token = token
         return atom
 

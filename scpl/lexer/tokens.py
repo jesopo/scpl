@@ -274,3 +274,34 @@ class TokenIPv6(Token):
             if next in CHARS_WORD:
                 self.complete = False
             return "invalid IPv6 character"
+
+class TokenDuration(Token):
+    def __init__(self,
+            index: int,
+            last:  Optional[Token]):
+        super().__init__(index, last)
+        self._on_unit = False
+
+    def push(self, next: str) -> Optional[str]:
+        if next.isdigit():
+            self._on_unit = False;
+            self.complete = False
+            self.text += next
+            return None
+        elif not self.text:
+            return "not a duration string"
+        elif next in CHARS_WORD:
+            if next in set("wdhms"):
+                if self._on_unit:
+                    self.complete = False
+                    return "consecutive unit chars"
+                else:
+                    self._on_unit = True;
+                    self.text += next
+                    self.complete = True
+                    return None
+            else:
+                self.complete = False
+                return "invalid unit character"
+        else:
+            return "invalid duration chracter"

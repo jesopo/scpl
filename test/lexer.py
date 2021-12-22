@@ -1,7 +1,8 @@
 import unittest
 from scpl.lexer import LexerError, LexerUnfinishedError, tokenise
-from scpl.lexer import (TokenHex, TokenIPv4, TokenIPv6, TokenNumber,
-    TokenOperator, TokenRegex, TokenSpace, TokenString, TokenWord)
+from scpl.lexer import (TokenDuration, TokenHex, TokenIPv4, TokenIPv6,
+    TokenNumber, TokenOperator, TokenRegex, TokenSpace, TokenString,
+    TokenWord)
 from scpl.common import OPERATORS_BINARY, OPERATORS_UNARY
 
 class LexerTestString(unittest.TestCase):
@@ -170,3 +171,14 @@ class LexerTestIPv6(unittest.TestCase):
         self.assertRaises(LexerError, lambda: tokenise("1::fffff"))
         self.assertRaises(LexerError, lambda: tokenise("1:2:3:4:5:6:7:8:9"))
         self.assertRaises(LexerError, lambda: tokenise("1::g"))
+
+class LexerTestDuration(unittest.TestCase):
+    def test_one(self):
+        token = tokenise("1w")[0]
+        self.assertIsInstance(token, TokenDuration)
+        self.assertEqual(token.text, "1w")
+
+    def test_many(self):
+        token = tokenise("1w2d3h4m5s")[0]
+        self.assertIsInstance(token, TokenDuration)
+        self.assertEqual(token.text, "1w2d3h4m5s")

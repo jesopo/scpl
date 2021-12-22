@@ -131,6 +131,8 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
                     operands.append(ParseInteger.from_token(token))
             elif isinstance(token, TokenHex):
                 operands.append(ParseHex.from_token(token))
+            elif isinstance(token, TokenDuration):
+                operands.append(ParseDuration.from_token(token))
             elif isinstance(token, TokenString):
                 operands.append(ParseString.from_token(token))
             elif isinstance(token, TokenRegex):
