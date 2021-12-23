@@ -1,9 +1,11 @@
 import unittest
+from re        import compile as re_compile
 from ipaddress import ip_address
 
 from scpl.lexer import tokenise
 from scpl.parser import operators, parse
-from scpl.parser import ParseInteger, ParseIPv4, ParseIPv6, ParseFloat, ParseString
+from scpl.parser import (ParseInteger, ParseIPv4, ParseIPv6, ParseFloat, ParseRegex,
+    ParseString)
 
 class ParserTestString(unittest.TestCase):
     def test_lone(self):
@@ -20,6 +22,36 @@ class ParserTestString(unittest.TestCase):
         atom = parse(tokenise('"asd" + /asd/'), {})[0]
         self.assertEqual(atom.__class__, operators.add.ParseBinaryAddStringRegex)
 
+    def test_not(self):
+        atom = parse(tokenise("!'a'"), {})[0]
+        self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
+
+class ParseTestRegex(unittest.TestCase):
+    def test_lone(self):
+        atom = parse(tokenise("/a/"), {})[0]
+        self.assertIsInstance(atom, ParseRegex)
+        self.assertEqual(atom.pattern, "a")
+        self.assertEqual(atom.delimiter, "/")
+        self.assertEqual(atom.compiled, re_compile("a"))
+        self.assertEqual(atom.flags, set())
+
+    def test_addregex(self):
+        atom = parse(tokenise('/asd/ + /asd/'), {})[0]
+        self.assertIsInstance(atom, operators.add.ParseBinaryAddRegexRegex)
+
+    def test_addstring(self):
+        atom = parse(tokenise('/asd/ + "asd"'), {})[0]
+        self.assertIsInstance(atom, operators.add.ParseBinaryAddRegexString)
+
+    def test_not(self):
+        atom = parse(tokenise("!/a/"), {})[0]
+        self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
+
+class ParseTestRegexset(unittest.TestCase):
+    def test_complement(self):
+        atom = parse(tokenise("~/a/"), {})[0]
+        self.assertIsInstance(atom, operators.complement.ParseUnaryComplementRegex)
+
 class ParserTestInteger(unittest.TestCase):
     def test_lone(self):
         atom = parse(tokenise("123"), {})[0]
@@ -27,8 +59,30 @@ class ParserTestInteger(unittest.TestCase):
         self.assertEqual(atom.value, 123)
 
     def test_addinteger(self):
-        atom = parse(tokenise('1 + 1'), {})[0]
+        atom = parse(tokenise("1 + 1"), {})[0]
         self.assertEqual(atom.__class__, operators.add.ParseBinaryAddIntegerInteger)
+    def test_addinteger_negative(self):
+        atom = parse(tokenise("1 + -1"), {})[0]
+        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddIntegerInteger)
+
+    def test_addfloat(self):
+        atom = parse(tokenise("1 + 1.0"), {})[0]
+        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddIntegerFloat)
+    def test_addfloat_negative(self):
+        atom = parse(tokenise("1 + -1.0"), {})[0]
+        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddIntegerFloat)
+
+    def test_negative(self):
+        atom = parse(tokenise("-1"), {})[0]
+        self.assertIsInstance(atom, operators.negative.ParseUnaryNegativeInteger)
+
+    def test_complement(self):
+        atom = parse(tokenise("~1"), {})[0]
+        self.assertIsInstance(atom, operators.complement.ParseUnaryComplementInteger)
+
+    def test_not(self):
+        atom = parse(tokenise("!1"), {})[0]
+        self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
 
 class ParserTestFloat(unittest.TestCase):
     def test_lone(self):
@@ -37,8 +91,20 @@ class ParserTestFloat(unittest.TestCase):
         self.assertEqual(atom.value, 123.0)
 
     def test_addfloat(self):
-        atom = parse(tokenise('1.0 + 1.0'), {})[0]
+        atom = parse(tokenise("1.0 + 1.0"), {})[0]
         self.assertEqual(atom.__class__, operators.add.ParseBinaryAddFloatFloat)
+
+    def test_addinteger(self):
+        atom = parse(tokenise("1.0 + 1"), {})[0]
+        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddFloatInteger)
+
+    def test_negative(self):
+        atom = parse(tokenise("-1.0"), {})[0]
+        self.assertIsInstance(atom, operators.negative.ParseUnaryNegativeFloat)
+
+    def test_not(self):
+        atom = parse(tokenise("!1.0"), {})[0]
+        self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
 
 class ParserTestIPv4(unittest.TestCase):
     def test_lone(self):
