@@ -30,6 +30,13 @@ class ParseCastStringBool(ParseUnaryOperator, ParseBool):
         return f"CastBool({self._atom!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
         return ParseBool(len(self._atom.eval(vars).value) > 0)
+class ParseCastRegexBool(ParseUnaryOperator, ParseBool):
+    def __init__(self, atom: ParseRegex):
+        self._atom = atom
+    def __repr__(self) -> str:
+        return f"CastBool({self._atom!r})"
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+        return ParseBool(len(self._atom.eval(vars).pattern) > 0)
 class ParseCastIntegerBool(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseInteger):
         self._atom = atom
@@ -50,6 +57,8 @@ def find_cast_bool(atom: ParseAtom) -> Optional[ParseBool]:
         return atom
     elif isinstance(atom, ParseString):
         return ParseCastStringBool(atom)
+    elif isinstance(atom, ParseRegex):
+        return ParseCastRegexBool(atom)
     elif isinstance(atom, ParseInteger):
         return ParseCastIntegerBool(atom)
     elif isinstance(atom, ParseFloat):
