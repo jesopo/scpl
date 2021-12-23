@@ -172,6 +172,55 @@ class ParseRegex(ParseAtom):
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseRegex":
         return self
 
+class ParseIP(ParseAtom):
+    def __init__(self, ip: int):
+        self.integer = ip
+
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIP":
+        return self
+
+class ParseIPv4(ParseIP):
+    def __repr__(self) -> str:
+        bytes = pack("!L", self.integer)
+        ntop  = inet_ntop(AF_INET, bytes)
+        return f"IPv4({ntop})"
+
+    @staticmethod
+    def to_int(text: str) -> int:
+        ip, *_ = unpack("!L", inet_pton(AF_INET, text))
+        return ip
+
+    @staticmethod
+    def from_token(token: Token) -> "ParseIPv4":
+        atom = ParseIPv4(ParseIPv4.to_int(token.text))
+        atom.token = token
+        return atom
+
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv4":
+        return self
+
+class ParseIPv6(ParseIP):
+    def __repr__(self) -> str:
+        high = self.integer >> 64
+        low = self.integer & ((1 << 64) - 1)
+        bytes = pack("!2Q", high, low)
+        ntop  = inet_ntop(AF_INET6, bytes)
+        return f"IPv6({ntop})"
+
+    @staticmethod
+    def to_int(text: str) -> int:
+        high, low = unpack('!2Q', inet_pton(AF_INET6, text))
+        return (high << 64) | low
+
+    @staticmethod
+    def from_token(token: Token) -> "ParseIPv6":
+        atom = ParseIPv6(ParseIPv6.to_int(token.text))
+        atom.token = token
+        return atom
+
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv6":
+        return self
+
 class ParseCIDR(ParseAtom):
     def __init__(self,
             network: int,
@@ -187,6 +236,9 @@ class ParseCIDR(ParseAtom):
         # & here to remove any host bits
         self.integer = network & self.mask
 
+    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDR":
+        return self
+
 class ParseCIDRv4(ParseCIDR):
     def __init__(self,
             network: int,
@@ -197,7 +249,14 @@ class ParseCIDRv4(ParseCIDR):
     def __repr__(self) -> str:
         bytes = pack("!L", self.integer)
         ntop  = inet_ntop(AF_INET, bytes)
-        return f"CIDR({ntop}/{self.prefix})"
+        return f"CIDRv4({ntop}/{self.prefix})"
+
+    @staticmethod
+    def from_token(token: Token) -> "ParseCIDRv4":
+        address, cidr = token.text.split("/")
+        atom = ParseCIDRv4(ParseIPv4.to_int(address), int(cidr))
+        atom.token = token
+        return atom
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDRv4":
         return self
@@ -214,48 +273,16 @@ class ParseCIDRv6(ParseCIDR):
         low = self.integer & ((1 << 64) - 1)
         bytes = pack("!2Q", high, low)
         ntop  = inet_ntop(AF_INET6, bytes)
-        return f"CIDR({ntop}/{self.prefix})"
+        return f"CIDRv6({ntop}/{self.prefix})"
+
+    @staticmethod
+    def from_token(token: Token) -> "ParseCIDRv6":
+        address, cidr = token.text.split("/")
+        atom = ParseCIDRv6(ParseIPv6.to_int(address), int(cidr))
+        atom.token = token
+        return atom
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDRv6":
-        return self
-
-class ParseIPv4(ParseAtom):
-    def __init__(self, ip: int):
-        self.integer = ip
-    def __repr__(self) -> str:
-        bytes = pack("!L", self.integer)
-        ntop  = inet_ntop(AF_INET, bytes)
-        return f"IPv4({ntop})"
-
-    @staticmethod
-    def from_token(token: Token) -> "ParseIPv4":
-        ip, *_ = unpack("!L", inet_pton(AF_INET, token.text))
-        atom   = ParseIPv4(ip)
-        atom.token = token
-        return atom
-
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv4":
-        return self
-
-class ParseIPv6(ParseAtom):
-    def __init__(self, ip: int):
-        self.integer = ip
-    def __repr__(self) -> str:
-        high = self.integer >> 64
-        low = self.integer & ((1 << 64) - 1)
-        bytes = pack("!2Q", high, low)
-        ntop  = inet_ntop(AF_INET6, bytes)
-        return f"IPv6({ntop})"
-
-    @staticmethod
-    def from_token(token: Token) -> "ParseIPv6":
-        high, low = unpack('!2Q', inet_pton(AF_INET6, token.text))
-        integer = (high << 64) | low
-        atom = ParseIPv6(integer)
-        atom.token = token
-        return atom
-
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv6":
         return self
 
 KEYWORDS: Dict[str, Type[ParseAtom]] = {

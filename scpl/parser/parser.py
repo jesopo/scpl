@@ -138,9 +138,15 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
             elif isinstance(token, TokenRegex):
                 operands.append(ParseRegex.from_token(token))
             elif isinstance(token, TokenIPv4):
-                operands.append(ParseIPv4.from_token(token))
+                if "/" in token.text:
+                    operands.append(ParseCIDRv4.from_token(token))
+                else:
+                    operands.append(ParseIPv4.from_token(token))
             elif isinstance(token, TokenIPv6):
-                operands.append(ParseIPv6.from_token(token))
+                if "/" in token.text:
+                    operands.append(ParseCIDRv6.from_token(token))
+                else:
+                    operands.append(ParseIPv6.from_token(token))
             else:
                 raise ParserError(token, "unknown token")
         else:

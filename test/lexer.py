@@ -140,6 +140,22 @@ class LexerTestIPv4(unittest.TestCase):
         self.assertEqual(token.__class__, TokenIPv4)
         self.assertEqual(token.text, "001.002.003.004")
 
+    def test_cidr(self):
+        token = tokenise("1.2.3.4/8")[0]
+        self.assertEqual(token.__class__, TokenIPv4)
+        self.assertEqual(token.text, "1.2.3.4/8")
+
+    def test_unfinished(self):
+        with self.assertRaises(LexerUnfinishedError) as cm1:
+            tokenise("1.2.3.")
+        self.assertIsInstance(cm1.exception.token, TokenIPv4)
+        self.assertEqual(cm1.exception.token.text, "1.2.3.")
+
+        with self.assertRaises(LexerUnfinishedError) as cm2:
+            tokenise("1.2.3.4/")
+        self.assertIsInstance(cm2.exception.token, TokenIPv4)
+        self.assertEqual(cm2.exception.token.text, "1.2.3.4/")
+
     def test_invalid(self):
         self.assertRaises(LexerError, lambda: tokenise("1.2.3.256"))
 
@@ -161,10 +177,26 @@ class LexerTestIPv6(unittest.TestCase):
         self.assertEqual(token.text, "fd84:9d71:8b8:1::1")
 
     def test_stop(self):
-        tokens = tokenise("fd84:9d71:8b8:1::1/")
+        tokens = tokenise("fd84:9d71:8b8:1::1-")
         self.assertEqual(len(tokens), 2)
         self.assertIsInstance(tokens[0], TokenIPv6)
         self.assertEqual(tokens[0].text, "fd84:9d71:8b8:1::1")
+
+    def test_cidr(self):
+        token = tokenise("1.2.3.4/8")[0]
+        self.assertEqual(token.__class__, TokenIPv4)
+        self.assertEqual(token.text, "1.2.3.4/8")
+
+    def test_unfinished(self):
+        with self.assertRaises(LexerUnfinishedError) as cm1:
+            tokenise("fd84:9d71:8b8:")
+        self.assertIsInstance(cm1.exception.token, TokenIPv6)
+        self.assertEqual(cm1.exception.token.text, "fd84:9d71:8b8:")
+
+        with self.assertRaises(LexerUnfinishedError) as cm2:
+            tokenise("d84:9d71:8b8:1::1/")
+        self.assertIsInstance(cm2.exception.token, TokenIPv6)
+        self.assertEqual(cm2.exception.token.text, "d84:9d71:8b8:1::1/")
 
     def test_invalid(self):
         self.assertRaises(LexerError, lambda: tokenise("1::1::1"))

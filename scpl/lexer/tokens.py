@@ -201,6 +201,7 @@ class TokenIPv4(Token):
         super().__init__(index, last)
         self._octet  = ""
         self._octets = 0
+        self._cidr   = False
 
     def push(self, next: str) -> Optional[str]:
         if next == ".":
@@ -214,9 +215,23 @@ class TokenIPv4(Token):
                 self._octet   = ""
                 self.complete = False
                 return None
+        elif next == "/":
+            if self._cidr:
+                return "excess cidr delimiter"
+            elif not self.complete:
+                return "invalid position for cidr delimiter"
+            else:
+                self.complete = False
+                self.text += next
+                self._cidr = True
+                return None
         elif next in CHARS_DIGIT:
             self._octet += next
-            if 0 <= int(self._octet) <= 255:
+            if self._cidr:
+                self.text += next
+                self.complete = True
+                return None
+            elif 0 <= int(self._octet) <= 255:
                 self.text    += next
                 self.complete = self._octets == 3
                 return None
@@ -234,6 +249,7 @@ class TokenIPv6(Token):
         self._trunc   = False
         self._hextet  = ""
         self._hextets = 0
+        self._cidr    = False
 
     def push(self, next: str) -> Optional[str]:
         if next == ":":
@@ -262,6 +278,23 @@ class TokenIPv6(Token):
                 if not self.complete:
                     self.complete = self._hextets == 7
                 return None
+        elif next == "/":
+            if self._cidr:
+                return "excess cidr delimiter"
+            elif not self.complete:
+                return "invalid position for cidr delimiter"
+            else:
+                self.complete = False
+                self.text += next
+                self._cidr = True
+                return None
+        elif self._cidr:
+            if next in CHARS_DIGIT:
+                self.text += next
+                self.complete = True
+                return None
+            else:
+                return "invalid cidr character"
         elif next in CHARS_HEX:
             self._hextet += next
             if 0 <= int(self._hextet, 16) <= 0xffff:
