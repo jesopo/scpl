@@ -11,8 +11,11 @@ from .add import find_binary_add
 from .subtract import find_binary_subtract
 from .multiply import find_binary_multiply
 from .divide import find_binary_divide
+from .lesser import find_binary_lesser
+from .greater import find_binary_greater
 from .bools import find_binary_and, find_binary_or, find_unary_not
 from .match import find_binary_match
+from .contains import find_binary_contains
 
 # unary
 from .negative import find_unary_negative
@@ -39,6 +42,12 @@ def find_binary_operator(
         return find_binary_and(left, right)
     elif token.text == "=~":
         return find_binary_match(left, right)
+    elif token.text == "in":
+        return find_binary_contains(left, right)
+    elif token.text == ">":
+        return find_binary_greater(left, right)
+    elif token.text == "<":
+        return find_binary_lesser(left, right)
     else:
         return None
 

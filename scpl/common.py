@@ -15,7 +15,7 @@ class Operator:
 OPERATORS_BINARY = {
     "&&": Operator(1, "And"),
     "||": Operator(1, "Or"),
-    "in": Operator(1, "SubsetOf"),
+    "in": Operator(2, "SubsetOf"),
     "<":  Operator(2, "LesserThanb"),
     ">":  Operator(2, "GreaterThan"),
     "==": Operator(2, "Equal"),
