@@ -20,6 +20,7 @@ from .contains import find_binary_contains
 # unary
 from .negative import find_unary_negative
 from .positive import find_unary_positive
+from .complement import find_unary_complement
 
 # ✨ special
 from .variable import find_variable
@@ -61,5 +62,7 @@ def find_unary_operator(
         return find_unary_positive(atom)
     elif token.text == "!":
         return find_unary_not(atom)
+    elif token.text == "~":
+        return find_unary_complement(atom)
     else:
         return None

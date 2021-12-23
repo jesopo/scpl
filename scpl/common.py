@@ -31,9 +31,10 @@ OPERATORS_BINARY = {
 }
 
 OPERATORS_UNARY = {
-    "!":  Operator(4, "Not", Associativity.RIGHT),
-    "+":  Operator(4, "Pos", Associativity.RIGHT),
-    "-":  Operator(4, "Neg", Associativity.RIGHT)
+    "!": Operator(4, "Not", Associativity.RIGHT),
+    "+": Operator(4, "Positive", Associativity.RIGHT),
+    "-": Operator(4, "Negative", Associativity.RIGHT),
+    "~": Operator(4, "Complement", Associativity.RIGHT),
 }
 
 def find_unescaped(
