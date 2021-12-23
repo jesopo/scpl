@@ -138,6 +138,16 @@ class LexerTestRegex(unittest.TestCase):
         self.assertEqual(tokens[3].__class__, TokenWord)
         self.assertEqual(tokens[4].__class__, TokenOperator)
 
+    def test_flags_valid(self):
+        token = tokenise("/asd/i")[0]
+        self.assertIsInstance(token, TokenRegex)
+        self.assertEqual(token.text, "/asd/i")
+
+    def test_flags_invalid(self):
+        token = tokenise("/asd/-")[0]
+        self.assertIsInstance(token, TokenRegex)
+        self.assertEqual(token.text, "/asd/")
+
     def test_unfinished(self):
         with self.assertRaises(LexerUnfinishedError) as cm:
             tokenise("/asd")
