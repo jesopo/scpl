@@ -151,14 +151,16 @@ class ParseRegex(ParseAtom):
         self.compiled = re_compile(pattern)
         self.pattern = pattern
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         if self.delimiter is not None:
             regex = f"{self.delimiter}{self.pattern}{self.delimiter}"
         else:
             regex = with_delimiter(self.pattern, REGEX_DELIMS)
-
         flags = ''.join(self.flags)
-        return f"Regex({regex}{flags})"
+        return f"{regex}{flags}"
+
+    def __repr__(self) -> str:
+        return f"Regex({str(self)})"
 
     @staticmethod
     def from_token(token: Token) -> "ParseRegex":
@@ -170,6 +172,21 @@ class ParseRegex(ParseAtom):
         return atom
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseRegex":
+        return self
+
+class ParseRegexset(ParseAtom):
+    def __init__(self, regexes: Set[Tuple[bool, ParseRegex]]):
+        self.regexes = regexes
+    def __repr__(self) -> str:
+        outs: List[str] = []
+        for invert, regex in sorted(self.regexes):
+            out = str(regex)
+            if invert:
+                out = f"~{out}"
+            outs.append(out)
+        return f"Regexset({', '.join(outs)})"
+
+    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseRegexset":
         return self
 
 class ParseIP(ParseAtom):
