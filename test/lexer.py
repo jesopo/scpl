@@ -85,6 +85,21 @@ class LexerTestHex(unittest.TestCase):
         self.assertRaises(LexerError, lambda: tokenise("0x-"))
         self.assertRaises(LexerError, lambda: tokenise("0xg"))
 
+class LexerTestDuration(unittest.TestCase):
+    def test_one(self):
+        token = tokenise("1w")[0]
+        self.assertIsInstance(token, TokenDuration)
+        self.assertEqual(token.text, "1w")
+
+    def test_many(self):
+        token = tokenise("1w2d3h4m5s")[0]
+        self.assertIsInstance(token, TokenDuration)
+        self.assertEqual(token.text, "1w2d3h4m5s")
+
+    def test_invalid(self):
+        self.assertRaises(LexerError, lambda: tokenise("1w2z"))
+        self.assertRaises(LexerError, lambda: tokenise("1w1"))
+
 class LexerTestOperators(unittest.TestCase):
     def test_binary(self):
         for operator in OPERATORS_BINARY:
@@ -203,14 +218,3 @@ class LexerTestIPv6(unittest.TestCase):
         self.assertRaises(LexerError, lambda: tokenise("1::fffff"))
         self.assertRaises(LexerError, lambda: tokenise("1:2:3:4:5:6:7:8:9"))
         self.assertRaises(LexerError, lambda: tokenise("1::g"))
-
-class LexerTestDuration(unittest.TestCase):
-    def test_one(self):
-        token = tokenise("1w")[0]
-        self.assertIsInstance(token, TokenDuration)
-        self.assertEqual(token.text, "1w")
-
-    def test_many(self):
-        token = tokenise("1w2d3h4m5s")[0]
-        self.assertIsInstance(token, TokenDuration)
-        self.assertEqual(token.text, "1w2d3h4m5s")
