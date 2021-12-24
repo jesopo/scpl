@@ -3,21 +3,21 @@ from .common import ParseBinaryOperator, ParseUnaryOperator
 from .cast import find_cast_bool
 from ..operands import ParseAtom, ParseBool
 
-class ParseBinaryAnd(ParseBinaryOperator, ParseBool):
+class ParseBinaryBoth(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseBool, right: ParseBool):
         self._left = left
         self._right = right
     def __repr__(self):
-        return f"And({self._left!r}, {self._right!r})"
+        return f"Both({self._left!r}, {self._right!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
         return ParseBool(self._left.eval(vars).value and self._right.eval(vars).value)
 
-class ParseBinaryOr(ParseBinaryOperator, ParseBool):
+class ParseBinaryEither(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseBool, right: ParseBool):
         self._left = left
         self._right = right
     def __repr__(self):
-        return f"Or({self._left!r}, {self._right!r})"
+        return f"Either({self._left!r}, {self._right!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
         return ParseBool(self._left.eval(vars).value or self._right.eval(vars).value)
 
@@ -36,15 +36,15 @@ def _cast(aatom: ParseAtom) -> Optional[ParseBool]:
     else:
         return None
 
-def find_binary_and(left: ParseAtom, right: ParseAtom) -> Optional[ParseBool]:
+def find_binary_both(left: ParseAtom, right: ParseAtom) -> Optional[ParseBool]:
     if (dcast := _double_cast(left, right)) is not None:
-        return ParseBinaryAnd(*dcast)
+        return ParseBinaryBoth(*dcast)
     else:
         return None
 
-def find_binary_or(left: ParseAtom, right: ParseAtom) -> Optional[ParseBool]:
+def find_binary_either(left: ParseAtom, right: ParseAtom) -> Optional[ParseBool]:
     if (dcast := _double_cast(left, right)) is not None:
-        return ParseBinaryOr(*dcast)
+        return ParseBinaryEither(*dcast)
     else:
         return None
 

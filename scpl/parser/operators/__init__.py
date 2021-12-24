@@ -12,9 +12,11 @@ from .multiply import find_binary_multiply
 from .divide import find_binary_divide
 from .lesser import find_binary_lesser
 from .greater import find_binary_greater
-from .bools import find_binary_and, find_binary_or, find_unary_not
+from .bools import find_binary_both, find_binary_either, find_unary_not
 from .match import find_binary_match
 from .contains import find_binary_contains
+from .equal import find_binary_equal
+from .bitwise import find_binary_and, find_binary_or, find_binary_xor
 
 # unary
 from .negative import find_unary_negative
@@ -37,9 +39,9 @@ def find_binary_operator(
     elif op_name == OperatorName.DIVIDE:
         return find_binary_divide(left, right)
     elif op_name == OperatorName.BOTH:
-        return find_binary_and(left, right)
+        return find_binary_both(left, right)
     elif op_name == OperatorName.EITHER:
-        return find_binary_and(left, right)
+        return find_binary_either(left, right)
     elif op_name == OperatorName.MATCH:
         return find_binary_match(left, right)
     elif op_name == OperatorName.CONTAINS:
@@ -48,6 +50,20 @@ def find_binary_operator(
         return find_binary_greater(left, right)
     elif op_name == OperatorName.LESSER:
         return find_binary_lesser(left, right)
+    elif op_name == OperatorName.EQUAL:
+        return find_binary_equal(left, right)
+    elif op_name == OperatorName.UNEQUAL:
+        # just treat != as !(==)
+        if (inner := find_binary_equal(left, right)) is not None:
+            return find_unary_not(inner)
+        else:
+            return None
+    elif op_name == OperatorName.AND:
+        return find_binary_and(left, right)
+    elif op_name == OperatorName.OR:
+        return find_binary_or(left, right)
+    elif op_name == OperatorName.XOR:
+        return find_binary_xor(left, right)
     else:
         return None
 
