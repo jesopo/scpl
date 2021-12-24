@@ -135,10 +135,8 @@ class ParserTestBinaryOperator(unittest.TestCase):
         self.assertIsInstance(atom, operators.equal.ParseBinaryEqualIntegerInteger)
         atom = parse(tokenise("1 - 1 < 2"), {})[0]
         self.assertIsInstance(atom, operators.lesser.ParseBinaryLesserIntegerInteger)
-        atom = parse(tokenise("1 - 1 < 2"), {})[0]
-        self.assertIsInstance(atom, operators.lesser.ParseBinaryLesserIntegerInteger)
-        atom = parse(tokenise("1 - 1 < 2"), {})[0]
-        self.assertIsInstance(atom, operators.lesser.ParseBinaryLesserIntegerInteger)
+        atom = parse(tokenise("1 - 1 > 2"), {})[0]
+        self.assertIsInstance(atom, operators.lesser.ParseBinaryGreaterIntegerInteger)
 
     def test_precedence_4(self):
         atom = parse(tokenise("1 ^ 1 | 2"), {})[0]
