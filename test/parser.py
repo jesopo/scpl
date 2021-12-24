@@ -119,3 +119,43 @@ class ParserTestIPv6(unittest.TestCase):
         atom = parse(tokenise(addr), {})[0]
         self.assertIsInstance(atom, ParseIPv6)
         self.assertEqual(atom.integer, int(ip_address(addr)))
+
+class ParserTestBinaryOperator(unittest.TestCase):
+    def test_precedence_0(self):
+        atom = parse(tokenise("1 && 1 || 1"), {})[0]
+        self.assertIsInstance(atom, operators.bools.ParseBinaryEither)
+
+    def test_precedence_1(self):
+        atom = parse(tokenise("true == true && true"), {})[0]
+        self.assertIsInstance(atom, operators.bools.ParseBinaryBoth)
+
+    def test_precedence_3(self):
+        # missing: unequal, contains, match
+        atom = parse(tokenise("1 - 1 == 2"), {})[0]
+        self.assertIsInstance(atom, operators.equal.ParseBinaryEqualIntegerInteger)
+        atom = parse(tokenise("1 - 1 < 2"), {})[0]
+        self.assertIsInstance(atom, operators.lesser.ParseBinaryLesserIntegerInteger)
+        atom = parse(tokenise("1 - 1 < 2"), {})[0]
+        self.assertIsInstance(atom, operators.lesser.ParseBinaryLesserIntegerInteger)
+        atom = parse(tokenise("1 - 1 < 2"), {})[0]
+        self.assertIsInstance(atom, operators.lesser.ParseBinaryLesserIntegerInteger)
+
+    def test_precedence_4(self):
+        atom = parse(tokenise("1 ^ 1 | 2"), {})[0]
+        self.assertIsInstance(atom, operators.bitwise.ParseBinaryOrIntegerInteger)
+
+    def test_precedence_5(self):
+        atom = parse(tokenise("1 & 1 ^ 2"), {})[0]
+        self.assertIsInstance(atom, operators.bitwise.ParseBinaryXorIntegerInteger)
+
+    def test_precedence_6(self):
+        atom = parse(tokenise("1 + 1 & 2"), {})[0]
+        self.assertIsInstance(atom, operators.bitwise.ParseBinaryAndIntegerInteger)
+
+    def test_precedence_7(self):
+        atom = parse(tokenise("1 / 1 + 2"), {})[0]
+        self.assertIsInstance(atom, operators.add.ParseBinaryAddFloatInteger)
+        atom = parse(tokenise("1 / 1 - 2"), {})[0]
+        self.assertIsInstance(atom, operators.subtract.ParseBinarySubtractFloatInteger)
+
+    # missing: multiply, divide, positive, negative, complement, exponent
