@@ -8,7 +8,7 @@ class ParseBinaryAndIntegerInteger(ParseBinaryOperator, ParseInteger):
         self._right = right
     def __repr__(self) -> str:
         return f"And({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseAtom:
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
         return ParseInteger(self._left.eval(vars).value & self._right.eval(vars).value)
 def find_binary_and(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
     if isinstance(left, ParseInteger) and isinstance(right, ParseInteger):
@@ -22,7 +22,7 @@ class ParseBinaryOrIntegerInteger(ParseBinaryOperator, ParseInteger):
         self._right = right
     def __repr__(self) -> str:
         return f"Or({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseAtom:
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
         return ParseInteger(self._left.eval(vars).value | self._right.eval(vars).value)
 def find_binary_or(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
     if isinstance(left, ParseInteger) and isinstance(right, ParseInteger):
@@ -36,7 +36,7 @@ class ParseBinaryXorIntegerInteger(ParseBinaryOperator, ParseInteger):
         self._right = right
     def __repr__(self) -> str:
         return f"Xor({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseAtom:
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
         return ParseInteger(self._left.eval(vars).value ^ self._right.eval(vars).value)
 def find_binary_xor(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
     if isinstance(left, ParseInteger) and isinstance(right, ParseInteger):
