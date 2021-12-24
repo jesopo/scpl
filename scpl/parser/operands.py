@@ -4,11 +4,11 @@ from re          import compile as re_compile
 from re          import escape as re_escape
 from socket      import inet_ntop, inet_pton, AF_INET, AF_INET6
 from struct      import pack, unpack
-from typing      import Any, Deque, Dict, List, Set, Type
+from typing      import Any, Deque, Dict, List, Optional, Set, Tuple, Type
 from typing      import OrderedDict as TOrderedDict
 
-from ..common    import *
-from ..lexer     import *
+from ..common.util import with_delimiter
+from ..lexer import Token
 
 # used for pretty printing when we don't have a delim already.
 # it'll pick whichever doesn't already exist in the string, or pick [0] and

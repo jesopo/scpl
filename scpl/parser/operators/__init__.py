@@ -3,8 +3,7 @@ from typing import Optional
 from .add import find_binary_add
 from ..operands import ParseAtom
 from ...lexer import Token
-
-from .common import ParseOperator
+from ...common.operators import OperatorName
 
 # binary
 from .add import find_binary_add
@@ -26,43 +25,43 @@ from .complement import find_unary_complement
 from .variable import find_variable
 
 def find_binary_operator(
-        token: Token, left: ParseAtom, right: ParseAtom
+        op_name: OperatorName, left: ParseAtom, right: ParseAtom
         ) -> Optional[ParseAtom]:
 
-    if token.text == "+":
+    if op_name == OperatorName.ADD:
         return find_binary_add(left, right)
-    elif token.text == "-":
+    elif op_name == OperatorName.SUBTRACT:
         return find_binary_subtract(left, right)
-    elif token.text == "*":
+    elif op_name == OperatorName.MULTIPLY:
         return find_binary_multiply(left, right)
-    elif token.text == "/":
+    elif op_name == OperatorName.DIVIDE:
         return find_binary_divide(left, right)
-    elif token.text == "&&":
+    elif op_name == OperatorName.BOTH:
         return find_binary_and(left, right)
-    elif token.text == "||":
+    elif op_name == OperatorName.EITHER:
         return find_binary_and(left, right)
-    elif token.text == "=~":
+    elif op_name == OperatorName.MATCH:
         return find_binary_match(left, right)
-    elif token.text == "in":
+    elif op_name == OperatorName.CONTAINS:
         return find_binary_contains(left, right)
-    elif token.text == ">":
+    elif op_name == OperatorName.GREATER:
         return find_binary_greater(left, right)
-    elif token.text == "<":
+    elif op_name == OperatorName.LESSER:
         return find_binary_lesser(left, right)
     else:
         return None
 
 def find_unary_operator(
-        token: Token, atom: ParseAtom
+        op_name: OperatorName, atom: ParseAtom
         ) -> Optional[ParseAtom]:
 
-    if token.text == "-":
+    if op_name == OperatorName.NEGATIVE:
         return find_unary_negative(atom)
-    if token.text == "+":
+    elif op_name == OperatorName.POSITIVE:
         return find_unary_positive(atom)
-    elif token.text == "!":
+    elif op_name == OperatorName.NOT:
         return find_unary_not(atom)
-    elif token.text == "~":
+    elif op_name == OperatorName.COMPLEMENT:
         return find_unary_complement(atom)
     else:
         return None

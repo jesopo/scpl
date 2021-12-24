@@ -3,8 +3,10 @@ from collections import deque
 from time        import monotonic
 from typing      import Dict
 
-from ..lexer           import tokenise
-from ..parser          import parse, ParseAtom, ParseOperator
+from ..lexer import tokenise
+from ..parser import parse
+from ..parser.operands import ParseAtom
+from ..parser.operators.common import ParseOperator
 from ..parser.__main__ import main_parser
 
 def main_eval(

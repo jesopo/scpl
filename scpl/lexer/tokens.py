@@ -1,6 +1,6 @@
 import string
-from typing   import Optional
-from ..common import *
+from typing import Optional
+from ..common.operators import OPERATORS_BINARY, OPERATORS_UNARY
 
 CHARS_SPACE    = set(" ")
 CHARS_DIGIT    = set(string.digits)

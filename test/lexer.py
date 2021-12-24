@@ -3,7 +3,7 @@ from scpl.lexer import LexerError, LexerUnfinishedError, tokenise
 from scpl.lexer import (TokenDuration, TokenHex, TokenIPv4, TokenIPv6,
     TokenNumber, TokenOperator, TokenRegex, TokenSpace, TokenString,
     TokenWord)
-from scpl.common import OPERATORS_BINARY, OPERATORS_UNARY
+from scpl.common.operators import OPERATORS_BINARY, OPERATORS_UNARY
 
 class LexerTestString(unittest.TestCase):
     def test_doublequote(self):

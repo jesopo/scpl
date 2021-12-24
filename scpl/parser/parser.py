@@ -5,31 +5,11 @@ from typing      import Deque, Generic, List, TypeVar
 from .operators  import find_binary_operator, find_unary_operator, find_variable
 from .operands   import *
 
-from ..common    import *
-from ..lexer     import *
-
-class PreparseOperator:
-    def __init__(self, token: Token):
-        self.token = token
-    def __repr__(self) -> str:
-        return self.operator().name
-    def operator(self) -> Operator:
-        raise NotImplementedError()
-    def weight(self):
-        return self.operator().weight
-    def is_left(self):
-        return self.operator().associativity == Associativity.LEFT
-    def is_right(self):
-        return self.operator().associativity == Associativity.RIGHT
-class PreparseBinaryOperator(PreparseOperator):
-    def operator(self) -> Operator:
-        return OPERATORS_BINARY[self.token.text]
-class PreparseUnaryOperator(PreparseOperator):
-    def operator(self) -> Operator:
-        return OPERATORS_UNARY[self.token.text]
-class PreparseParenthesis(PreparseOperator):
-    def weight(self):
-        return 0
+from ..common.operators import (Associativity, OPERATORS, OPERATORS_BINARY,
+    OPERATORS_UNARY, OperatorName)
+from ..lexer import (Token, TokenDuration, TokenHex, TokenIPv4, TokenIPv6, TokenNumber,
+    TokenOperator, TokenParenthesis, TokenRegex, TokenString, TokenTransparent,
+    TokenWord)
 
 class ParserError(Exception):
     def __init__(self,
@@ -39,29 +19,30 @@ class ParserError(Exception):
         super().__init__(error)
 
 def parse(tokens: Deque[Token], types: Dict[str, type]):
-    operands:  Deque[ParseAtom]        = deque()
-    operators: Deque[PreparseOperator] = deque()
+    operands:  Deque[ParseAtom] = deque()
+    operators: Deque[Tuple[OperatorName, Token]] = deque()
 
-    def _pop_op() -> PreparseOperator:
-        op_head = operators.pop()
+    def _pop_op() -> OperatorName:
+        op_head_name, op_head_token = operators.pop()
+        op_head = OPERATORS[op_head_name]
 
-        if isinstance(op_head, PreparseUnaryOperator):
+        if op_head.operands() == 1:
             if not operands:
-                raise ParserError(op_head.token, "missing unary operand")
+                raise ParserError(op_head_token, "missing unary operand")
             right = operands.pop()
-            atom  = find_unary_operator(op_head.token, right)
+            atom  = find_unary_operator(op_head_name, right)
         else:
             if not len(operands) > 1:
-                raise ParserError(op_head.token, "missing binary operand")
+                raise ParserError(op_head_token, "missing binary operand")
             right = operands.pop()
             left  = operands.pop()
-            atom  = find_binary_operator(op_head.token, left, right)
+            atom  = find_binary_operator(op_head_name, left, right)
 
         if atom is not None:
             operands.append(atom)
-            return op_head
+            return op_head_name
         else:
-            raise ParserError(op_head.token, "invalid operands for operator")
+            raise ParserError(op_head_token, "invalid operands for operator")
 
     last_is_operator = False
     while tokens:
@@ -72,10 +53,9 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
 
         elif isinstance(token, TokenParenthesis):
             if token.text == "(":
-                operators.append(PreparseParenthesis(token))
+                operators.append((OperatorName.PARENTHESIS, token))
             else:
-                while (operators and
-                        not isinstance(operators[-1], PreparseParenthesis)):
+                while operators and not operators[-1] == OperatorName.PARENTHESIS:
                     _pop_op()
 
                 if operators:
@@ -84,29 +64,34 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
                     raise ParserError(token, "unexpected closing parenthesis")
 
         elif isinstance(token, TokenOperator):
-            operator: PreparseOperator
             if last_is_operator or not operands:
                 if token.text in OPERATORS_UNARY:
-                    operator = PreparseUnaryOperator(token)
+                    op_new_name = OPERATORS_UNARY[token.text]
                 else:
                     raise ParserError(token, "invalid unary operator")
             else:
                 if token.text in OPERATORS_BINARY:
-                    operator = PreparseBinaryOperator(token)
+                    op_new_name = OPERATORS_BINARY[token.text]
                 else:
                     raise ParserError(token, "invalid binary operator")
 
-            weight = operator.weight()
+            op_new = OPERATORS[op_new_name]
+
             # shunting yard
             while operators:
-                head = operators[-1]
-                if ((head.is_left() and head.weight() >= weight)
-                        or (head.is_right() and head.weight() > weight)):
+                op_head_name, _ = operators[-1]
+                op_head = OPERATORS[op_head_name]
+
+                if (op_head.associativity == Associativity.LEFT
+                        and op_head.weight >= op_new.weight):
+                    _pop_op()
+                elif (op_head.associativity == Associativity.RIGHT
+                        and op_head.weight > op_new.weight):
                     _pop_op()
                 else:
                     break
 
-            operators.append(operator)
+            operators.append((op_new_name, token))
             last_is_operator = True
 
         elif last_is_operator or not operands:
@@ -153,8 +138,9 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
             raise ParserError(token, "missing operator")
 
     while operators:
-        if isinstance(operators[-1], PreparseParenthesis):
-            raise ParserError(operators[-1].token, "unclosed parenthesis")
+        op_head_name, op_head_token = operators[-1]
+        if op_head_name == OperatorName.PARENTHESIS:
+            raise ParserError(op_head_token, "unclosed parenthesis")
         else:
             _pop_op()
 
