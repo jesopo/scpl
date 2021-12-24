@@ -3,7 +3,7 @@ from ipaddress import ip_network
 
 from scpl.lexer import tokenise
 from scpl.parser import parse
-from scpl.parser import (ParseCIDRv4, ParseCIDRv6, ParseInteger, ParseFloat,
+from scpl.parser import (ParseBool, ParseCIDRv4, ParseCIDRv6, ParseInteger, ParseFloat,
     ParseRegex, ParseString)
 
 class EvalTestString(unittest.TestCase):
@@ -19,6 +19,15 @@ class EvalTestString(unittest.TestCase):
         self.assertEqual(atom.pattern, "asd\.(?i:asd)")
         self.assertEqual(atom.delimiter, None)
         self.assertEqual(atom.flags, set())
+
+    def test_equalstring(self):
+        atom = parse(tokenise('"asd" == "asd"'), {})[0].eval({})
+        self.assertIsInstance(atom, ParseBool)
+        self.assertEqual(atom.value, True)
+    def test_unequalstring(self):
+        atom = parse(tokenise('"asd" != "bsd"'), {})[0].eval({})
+        self.assertIsInstance(atom, ParseBool)
+        self.assertEqual(atom.value, True)
 
 class EvalTestIPv4(unittest.TestCase):
     def test_divideinteger(self):

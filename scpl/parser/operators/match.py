@@ -4,6 +4,7 @@ from ..operands import ParseAtom, ParseBool, ParseRegex, ParseRegexset, ParseStr
 
 class ParseBinaryMatchStringRegex(ParseBinaryOperator, ParseString):
     def __init__(self, left: ParseString, right: ParseRegex):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:
@@ -18,6 +19,7 @@ class ParseBinaryMatchStringRegex(ParseBinaryOperator, ParseString):
 
 class ParseBinaryMatchStringRegexset(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseString, right: ParseRegexset):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:

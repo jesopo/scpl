@@ -4,6 +4,7 @@ from ..operands import ParseAtom, ParseInteger
 
 class ParseBinaryAndIntegerInteger(ParseBinaryOperator, ParseInteger):
     def __init__(self, left: ParseInteger, right: ParseInteger):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:
@@ -18,6 +19,7 @@ def find_binary_and(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
 
 class ParseBinaryOrIntegerInteger(ParseBinaryOperator, ParseInteger):
     def __init__(self, left: ParseInteger, right: ParseInteger):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:
@@ -32,6 +34,7 @@ def find_binary_or(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
 
 class ParseBinaryXorIntegerInteger(ParseBinaryOperator, ParseInteger):
     def __init__(self, left: ParseInteger, right: ParseInteger):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:

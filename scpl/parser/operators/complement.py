@@ -4,6 +4,7 @@ from ..operands import ParseAtom, ParseInteger, ParseRegex, ParseRegexset
 
 class ParseUnaryComplementInteger(ParseUnaryOperator, ParseInteger):
     def __init__(self, atom: ParseInteger):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"Complement({self._atom!r})"
@@ -12,6 +13,7 @@ class ParseUnaryComplementInteger(ParseUnaryOperator, ParseInteger):
 
 class ParseUnaryComplementRegex(ParseUnaryOperator, ParseRegexset):
     def __init__(self, atom: ParseRegex):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"Complement({self._atom!r})"

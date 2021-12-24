@@ -5,6 +5,7 @@ from ..operands import (ParseAtom, ParseBool, ParseCIDR, ParseCIDRv4, ParseCIDRv
 
 class ParseBinaryContainsIPCIDR(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseIP, right: ParseCIDR):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self) -> str:

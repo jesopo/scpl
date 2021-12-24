@@ -25,6 +25,7 @@ class ParseCastStringRegex(ParseUnaryOperator, ParseRegex):
 
 class ParseCastStringBool(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseString):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"CastBool({self._atom!r})"
@@ -32,6 +33,7 @@ class ParseCastStringBool(ParseUnaryOperator, ParseBool):
         return ParseBool(len(self._atom.eval(vars).value) > 0)
 class ParseCastRegexBool(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseRegex):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"CastBool({self._atom!r})"
@@ -39,6 +41,7 @@ class ParseCastRegexBool(ParseUnaryOperator, ParseBool):
         return ParseBool(len(self._atom.eval(vars).pattern) > 0)
 class ParseCastIntegerBool(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseInteger):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"CastBool({self._atom!r})"
@@ -46,6 +49,7 @@ class ParseCastIntegerBool(ParseUnaryOperator, ParseBool):
         return ParseBool(not self._atom.eval(vars).value == 0)
 class ParseCastFloatBool(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseFloat):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"CastBool({self._atom!r})"

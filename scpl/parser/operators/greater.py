@@ -5,6 +5,7 @@ from ..operands import ParseAtom, ParseBool, ParseFloat, ParseInteger
 
 class ParseBinaryGreaterIntegerInteger(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseInteger, right: ParseInteger):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self):
@@ -14,6 +15,7 @@ class ParseBinaryGreaterIntegerInteger(ParseBinaryOperator, ParseBool):
 
 class ParseBinaryGreaterFloatFloat(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseFloat, right: ParseFloat):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self):

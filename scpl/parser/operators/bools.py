@@ -5,6 +5,7 @@ from ..operands import ParseAtom, ParseBool
 
 class ParseBinaryBoth(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseBool, right: ParseBool):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self):
@@ -14,6 +15,7 @@ class ParseBinaryBoth(ParseBinaryOperator, ParseBool):
 
 class ParseBinaryEither(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseBool, right: ParseBool):
+        super().__init__(left, right)
         self._left = left
         self._right = right
     def __repr__(self):
@@ -50,6 +52,7 @@ def find_binary_either(left: ParseAtom, right: ParseAtom) -> Optional[ParseBool]
 
 class ParseUnaryNot(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseBool):
+        super().__init__(atom)
         self._atom = atom
     def __repr__(self) -> str:
         return f"Not({self._atom!r})"
