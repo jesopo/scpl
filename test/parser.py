@@ -9,121 +9,121 @@ from scpl.parser import (ParseInteger, ParseCIDRv4, ParseCIDRv6, ParseIPv4, Pars
 
 class ParserTestString(unittest.TestCase):
     def test_lone(self):
-        atom = parse(tokenise('"asd"'), {})[0]
-        self.assertEqual(atom.__class__, ParseString)
-        self.assertEqual(atom.value, "asd")
-        self.assertEqual(atom.delimiter, '"')
+        atoms, deps = parse(tokenise('"asd"'), {})
+        self.assertIsInstance(atoms[0], ParseString)
+        self.assertEqual(atoms[0].value, "asd")
+        self.assertEqual(atoms[0].delimiter, '"')
 
     def test_addstring(self):
-        atom = parse(tokenise('"asd" + "asd"'), {})[0]
-        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddStringString)
+        atoms, deps = parse(tokenise('"asd" + "asd"'), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddStringString)
 
     def test_addregex(self):
-        atom = parse(tokenise('"asd" + /asd/'), {})[0]
-        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddStringRegex)
+        atoms, deps = parse(tokenise('"asd" + /asd/'), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddStringRegex)
 
     def test_not(self):
-        atom = parse(tokenise("!'a'"), {})[0]
-        self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
+        atoms, deps = parse(tokenise("!'a'"), {})
+        self.assertIsInstance(atoms[0], operators.bools.ParseUnaryNot)
 
 class ParseTestRegex(unittest.TestCase):
     def test_lone(self):
-        atom = parse(tokenise("/a/"), {})[0]
-        self.assertIsInstance(atom, ParseRegex)
-        self.assertEqual(atom.pattern, "a")
-        self.assertEqual(atom.delimiter, "/")
-        self.assertEqual(atom.compiled, re_compile("a"))
-        self.assertEqual(atom.flags, set())
+        atoms, deps = parse(tokenise("/a/"), {})
+        self.assertIsInstance(atoms[0], ParseRegex)
+        self.assertEqual(atoms[0].pattern, "a")
+        self.assertEqual(atoms[0].delimiter, "/")
+        self.assertEqual(atoms[0].compiled, re_compile("a"))
+        self.assertEqual(atoms[0].flags, set())
 
     def test_addregex(self):
-        atom = parse(tokenise('/asd/ + /asd/'), {})[0]
-        self.assertIsInstance(atom, operators.add.ParseBinaryAddRegexRegex)
+        atoms, deps = parse(tokenise('/asd/ + /asd/'), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddRegexRegex)
 
     def test_addstring(self):
-        atom = parse(tokenise('/asd/ + "asd"'), {})[0]
-        self.assertIsInstance(atom, operators.add.ParseBinaryAddRegexString)
+        atoms, deps = parse(tokenise('/asd/ + "asd"'), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddRegexString)
 
     def test_not(self):
-        atom = parse(tokenise("!/a/"), {})[0]
-        self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
+        atoms, deps = parse(tokenise("!/a/"), {})
+        self.assertIsInstance(atoms[0], operators.bools.ParseUnaryNot)
 
     def test_complement(self):
-        atom = parse(tokenise("~/a/"), {})[0]
-        self.assertIsInstance(atom, operators.complement.ParseUnaryComplementRegex)
+        atoms, deps = parse(tokenise("~/a/"), {})
+        self.assertIsInstance(atoms[0], operators.complement.ParseUnaryComplementRegex)
 
 class ParseTestRegexset(unittest.TestCase):
     def test_complement(self):
-        atom = parse(tokenise("~/a/"), {})[0]
-        self.assertIsInstance(atom, operators.complement.ParseUnaryComplementRegex)
+        atoms, deps = parse(tokenise("~/a/"), {})
+        self.assertIsInstance(atoms[0], operators.complement.ParseUnaryComplementRegex)
 
 class ParserTestInteger(unittest.TestCase):
     def test_lone(self):
-        atom = parse(tokenise("123"), {})[0]
-        self.assertEqual(atom.__class__, ParseInteger)
-        self.assertEqual(atom.value, 123)
+        atoms, deps = parse(tokenise("123"), {})
+        self.assertIsInstance(atoms[0], ParseInteger)
+        self.assertEqual(atoms[0].value, 123)
 
     def test_addinteger(self):
-        atom = parse(tokenise("1 + 1"), {})[0]
-        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddIntegerInteger)
+        atoms, deps = parse(tokenise("1 + 1"), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddIntegerInteger)
     def test_addinteger_negative(self):
-        atom = parse(tokenise("1 + -1"), {})[0]
-        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddIntegerInteger)
+        atoms, deps = parse(tokenise("1 + -1"), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddIntegerInteger)
 
     def test_addfloat(self):
-        atom = parse(tokenise("1 + 1.0"), {})[0]
-        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddIntegerFloat)
+        atoms, deps = parse(tokenise("1 + 1.0"), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddIntegerFloat)
     def test_addfloat_negative(self):
-        atom = parse(tokenise("1 + -1.0"), {})[0]
-        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddIntegerFloat)
+        atoms, deps = parse(tokenise("1 + -1.0"), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddIntegerFloat)
 
     def test_negative(self):
-        atom = parse(tokenise("-1"), {})[0]
-        self.assertIsInstance(atom, operators.negative.ParseUnaryNegativeInteger)
+        atoms, deps = parse(tokenise("-1"), {})
+        self.assertIsInstance(atoms[0], operators.negative.ParseUnaryNegativeInteger)
 
     def test_complement(self):
-        atom = parse(tokenise("~1"), {})[0]
-        self.assertIsInstance(atom, operators.complement.ParseUnaryComplementInteger)
+        atoms, deps = parse(tokenise("~1"), {})
+        self.assertIsInstance(atoms[0], operators.complement.ParseUnaryComplementInteger)
 
     def test_not(self):
-        atom = parse(tokenise("!1"), {})[0]
-        self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
+        atoms, deps = parse(tokenise("!1"), {})
+        self.assertIsInstance(atoms[0], operators.bools.ParseUnaryNot)
 
 class ParserTestFloat(unittest.TestCase):
     def test_lone(self):
-        atom = parse(tokenise("123.0"), {})[0]
-        self.assertEqual(atom.__class__, ParseFloat)
-        self.assertEqual(atom.value, 123.0)
+        atoms, deps = parse(tokenise("123.0"), {})
+        self.assertIsInstance(atoms[0], ParseFloat)
+        self.assertEqual(atoms[0].value, 123.0)
 
     def test_addfloat(self):
-        atom = parse(tokenise("1.0 + 1.0"), {})[0]
-        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddFloatFloat)
+        atoms, deps = parse(tokenise("1.0 + 1.0"), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddFloatFloat)
 
     def test_addinteger(self):
-        atom = parse(tokenise("1.0 + 1"), {})[0]
-        self.assertEqual(atom.__class__, operators.add.ParseBinaryAddFloatInteger)
+        atoms, deps = parse(tokenise("1.0 + 1"), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddFloatInteger)
 
     def test_negative(self):
-        atom = parse(tokenise("-1.0"), {})[0]
-        self.assertIsInstance(atom, operators.negative.ParseUnaryNegativeFloat)
+        atoms, deps = parse(tokenise("-1.0"), {})
+        self.assertIsInstance(atoms[0], operators.negative.ParseUnaryNegativeFloat)
 
     def test_not(self):
-        atom = parse(tokenise("!1.0"), {})[0]
-        self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
+        atoms, deps = parse(tokenise("!1.0"), {})
+        self.assertIsInstance(atoms[0], operators.bools.ParseUnaryNot)
 
 class ParserTestIPv4(unittest.TestCase):
     def test(self):
         addr = "10.84.1.1"
-        atom = parse(tokenise(addr), {})[0]
-        self.assertIsInstance(atom, ParseIPv4)
-        self.assertEqual(atom.integer, int(ip_address(addr)))
+        atoms, deps = parse(tokenise(addr), {})
+        self.assertIsInstance(atoms[0], ParseIPv4)
+        self.assertEqual(atoms[0].integer, int(ip_address(addr)))
 
 class ParserTestCIDRv4(unittest.TestCase):
     def test(self):
         addr = "10.84.1.1/16"
-        atom = parse(tokenise(addr), {})[0]
-        self.assertIsInstance(atom, ParseCIDRv4)
-        self.assertEqual(atom.integer, int(ip_network(addr, strict=False).network_address))
-        self.assertEqual(atom.prefix, 16)
+        atoms, deps = parse(tokenise(addr), {})
+        self.assertIsInstance(atoms[0], ParseCIDRv4)
+        self.assertEqual(atoms[0].integer, int(ip_network(addr, strict=False).network_address))
+        self.assertEqual(atoms[0].prefix, 16)
 
     def test_invalid(self):
         self.assertRaises(ValueError, lambda: parse(tokenise("10.84.1.1/33"), {}))
@@ -131,64 +131,64 @@ class ParserTestCIDRv4(unittest.TestCase):
 class ParserTestIPv6(unittest.TestCase):
     def test(self):
         addr = "fd84:9d71:8b8:1::1"
-        atom = parse(tokenise(addr), {})[0]
-        self.assertIsInstance(atom, ParseIPv6)
-        self.assertEqual(atom.integer, int(ip_address(addr)))
+        atoms, deps = parse(tokenise(addr), {})
+        self.assertIsInstance(atoms[0], ParseIPv6)
+        self.assertEqual(atoms[0].integer, int(ip_address(addr)))
 
 class ParserTestCIDRv6(unittest.TestCase):
     def test(self):
         addr = "fd84:9d71:8b8:1::1/48"
-        atom = parse(tokenise(addr), {})[0]
-        self.assertIsInstance(atom, ParseCIDRv6)
-        self.assertEqual(atom.integer, int(ip_network(addr, strict=False).network_address))
-        self.assertEqual(atom.prefix, 48)
+        atoms, deps = parse(tokenise(addr), {})
+        self.assertIsInstance(atoms[0], ParseCIDRv6)
+        self.assertEqual(atoms[0].integer, int(ip_network(addr, strict=False).network_address))
+        self.assertEqual(atoms[0].prefix, 48)
 
     def test_invalid(self):
         self.assertRaises(ValueError, lambda: parse(tokenise("fd84:9d71:8b8:1::1/129"), {}))
 
 class ParserTestBinaryOperator(unittest.TestCase):
     def test_precedence_0(self):
-        atom = parse(tokenise("1 && 1 || 1"), {})[0]
-        self.assertIsInstance(atom, operators.bools.ParseBinaryEither)
+        atoms, deps = parse(tokenise("1 && 1 || 1"), {})
+        self.assertIsInstance(atoms[0], operators.bools.ParseBinaryEither)
 
     def test_precedence_1(self):
-        atom = parse(tokenise("true == true && true"), {})[0]
-        self.assertIsInstance(atom, operators.bools.ParseBinaryBoth)
+        atoms, deps = parse(tokenise("true == true && true"), {})
+        self.assertIsInstance(atoms[0], operators.bools.ParseBinaryBoth)
 
     def test_precedence_3(self):
         # missing: contains, match
-        atom = parse(tokenise("1 - 1 == 2"), {})[0]
-        self.assertIsInstance(atom, operators.equal.ParseBinaryEqualIntegerInteger)
-        atom = parse(tokenise("1 - 1 != 2"), {})[0]
-        self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
-        atom = parse(tokenise("1 - 1 < 2"), {})[0]
-        self.assertIsInstance(atom, operators.lesser.ParseBinaryLesserIntegerInteger)
-        atom = parse(tokenise("1 - 1 > 2"), {})[0]
-        self.assertIsInstance(atom, operators.greater.ParseBinaryGreaterIntegerInteger)
+        atoms, deps = parse(tokenise("1 - 1 == 2"), {})
+        self.assertIsInstance(atoms[0], operators.equal.ParseBinaryEqualIntegerInteger)
+        atoms, deps = parse(tokenise("1 - 1 != 2"), {})
+        self.assertIsInstance(atoms[0], operators.bools.ParseUnaryNot)
+        atoms, deps = parse(tokenise("1 - 1 < 2"), {})
+        self.assertIsInstance(atoms[0], operators.lesser.ParseBinaryLesserIntegerInteger)
+        atoms, deps = parse(tokenise("1 - 1 > 2"), {})
+        self.assertIsInstance(atoms[0], operators.greater.ParseBinaryGreaterIntegerInteger)
 
     def test_precedence_4(self):
-        atom = parse(tokenise("1 ^ 1 | 2"), {})[0]
-        self.assertIsInstance(atom, operators.bitwise.ParseBinaryOrIntegerInteger)
+        atoms, deps = parse(tokenise("1 ^ 1 | 2"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryOrIntegerInteger)
 
     def test_precedence_5(self):
-        atom = parse(tokenise("1 & 1 ^ 2"), {})[0]
-        self.assertIsInstance(atom, operators.bitwise.ParseBinaryXorIntegerInteger)
+        atoms, deps = parse(tokenise("1 & 1 ^ 2"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryXorIntegerInteger)
 
     def test_precedence_6(self):
-        atom = parse(tokenise("1 + 1 & 2"), {})[0]
-        self.assertIsInstance(atom, operators.bitwise.ParseBinaryAndIntegerInteger)
+        atoms, deps = parse(tokenise("1 + 1 & 2"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryAndIntegerInteger)
 
     def test_precedence_7(self):
-        atom = parse(tokenise("1 / 1 + 2"), {})[0]
-        self.assertIsInstance(atom, operators.add.ParseBinaryAddFloatInteger)
-        atom = parse(tokenise("1 / 1 - 2"), {})[0]
-        self.assertIsInstance(atom, operators.subtract.ParseBinarySubtractFloatInteger)
+        atoms, deps = parse(tokenise("1 / 1 + 2"), {})
+        self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddFloatInteger)
+        atoms, deps = parse(tokenise("1 / 1 - 2"), {})
+        self.assertIsInstance(atoms[0], operators.subtract.ParseBinarySubtractFloatInteger)
 
     def test_precedence_8(self):
-        atom = parse(tokenise("1 ** 1 * 2"), {})[0]
-        self.assertIsInstance(atom, operators.multiply.ParseBinaryMultiplyIntegerInteger)
-        atom = parse(tokenise("1 ** 1 / 2"), {})[0]
-        self.assertIsInstance(atom, operators.divide.ParseBinaryDivideIntegerInteger)
+        atoms, deps = parse(tokenise("1 ** 1 * 2"), {})
+        self.assertIsInstance(atoms[0], operators.multiply.ParseBinaryMultiplyIntegerInteger)
+        atoms, deps = parse(tokenise("1 ** 1 / 2"), {})
+        self.assertIsInstance(atoms[0], operators.divide.ParseBinaryDivideIntegerInteger)
 
     # missing: 9 (positive, negative)
     # missing: 10 (complement)

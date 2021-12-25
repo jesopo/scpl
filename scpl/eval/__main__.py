@@ -11,22 +11,23 @@ from ..parser.__main__ import main_parser
 
 def main_eval(
         line: str,
-        vars: Dict[str, str]
+        vars_serial: Dict[str, str]
         ):
 
-    var_atoms: Dict[str, ParseAtom] = {}
-    for key, value in vars.items():
-        var_tokens     = deque(tokenise(value))
-        var_atoms[key] = parse(var_tokens, {})[0]
+    vars: Dict[str, ParseAtom] = {}
+    for key, value in vars_serial.items():
+        var_tokens = tokenise(value)
+        var_atoms, _ = parse(var_tokens, {})
+        vars[key] = var_atoms[0]
 
-    ast = main_parser(line, {k: type(v) for k, v in var_atoms.items()})
+    ast = main_parser(line, {k: type(v) for k, v in vars.items()})
     if not isinstance(ast, ParseOperator):
         print(f"nothing to do")
         sys.exit(1)
 
     start = monotonic()
     try:
-        out = ast.eval(var_atoms)
+        out = ast.eval(vars)
     except Exception as e:
         print(f"eval error: {type(e).__name__}: {str(e)}")
         traceback.print_exc()

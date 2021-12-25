@@ -13,7 +13,7 @@ def main_parser(line: str, types: Dict[str, type]) -> ParseAtom:
     tokens = main_lexer(line)
     start = monotonic()
     try:
-        ast = parse(tokens, types)[0]
+        ast, deps = parse(tokens, types)
     except ParserError as e:
         print()
         print(line)
@@ -27,7 +27,7 @@ def main_parser(line: str, types: Dict[str, type]) -> ParseAtom:
 
         #ast = ast.precompile()
         #print(f"precomp : {ast!r}")
-        return ast
+        return ast[0]
 
 if __name__ == "__main__":
 

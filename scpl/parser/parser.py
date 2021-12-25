@@ -1,6 +1,6 @@
 from collections import deque
 from dataclasses import dataclass
-from typing      import Deque, Generic, List, TypeVar
+from typing      import Deque, Generic, List, Sequence, Set, TypeVar
 
 from .operators  import find_binary_operator, find_unary_operator, find_variable
 from .operands   import *
@@ -18,9 +18,14 @@ class ParserError(Exception):
         self.token = token
         super().__init__(error)
 
-def parse(tokens: Deque[Token], types: Dict[str, type]):
+def parse(
+        tokens: Deque[Token],
+        types: Dict[str, type]
+        ) -> Tuple[Sequence[ParseAtom], Set[str]]:
+
     operands:  Deque[ParseAtom] = deque()
     operators: Deque[Tuple[OperatorName, Token]] = deque()
+    dependencies: Set[str] = set()
 
     def _pop_op() -> OperatorName:
         op_head_name, op_head_token = operators.pop()
@@ -106,6 +111,7 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
                     # shouldn't happen
                     raise ParserError(token, f"invalid variable type {var_type!r}")
                 else:
+                    dependencies.add(token.text)
                     operands.append(var)
 
             elif isinstance(token, TokenNumber):
@@ -143,4 +149,4 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
         else:
             _pop_op()
 
-    return list(operands)
+    return list(operands), dependencies
