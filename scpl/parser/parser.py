@@ -100,14 +100,13 @@ def parse(tokens: Deque[Token], types: Dict[str, type]):
                 if token.text in KEYWORDS:
                     keyword_type = KEYWORDS[token.text]
                     operands.append(keyword_type.from_token(token))
+                elif (var_type := types.get(token.text)) is not None:
+                    raise ParserError(token, f"unknown variable {token.text}")
+                elif (var := find_variable(token.text, types)) is None:
+                    # shouldn't happen
+                    raise ParserError(token, f"invalid variable type {var_type!r}")
                 else:
-                    if not token.text in types:
-                        raise ParserError(token, f"unknown variable {token.text}")
-                    elif (var := find_variable(token.text, types)) is None:
-                        # shouldn't happen
-                        raise ParserError(token, "invalid variable type")
-                    else:
-                        operands.append(var)
+                    operands.append(var)
 
             elif isinstance(token, TokenNumber):
                 if "." in token.text:
