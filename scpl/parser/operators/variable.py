@@ -32,23 +32,18 @@ class ParseVariableIPv6(ParseVariable, ParseIPv6):
     def eval(self, variables: Dict[str, ParseAtom]) -> ParseIPv6:
         return cast(ParseIPv6, variables[self.name])
 
-def find_variable(
-        name: str, types: Dict[str, type]
-        ) -> Optional[ParseAtom]:
-
-    if not name in types:
-        return None
-    elif types[name] == ParseString:
+def find_variable(name: str, var_type: type) -> Optional[ParseAtom]:
+    if var_type == ParseString:
         return ParseVariableString(name)
-    elif types[name] == ParseInteger:
+    elif var_type == ParseInteger:
         return ParseVariableInteger(name)
-    elif types[name] == ParseFloat:
+    elif var_type == ParseFloat:
         return ParseVariableFloat(name)
-    elif types[name] == ParseRegex:
+    elif var_type == ParseRegex:
         return ParseVariableRegex(name)
-    elif types[name] == ParseIPv4:
+    elif var_type == ParseIPv4:
         return ParseVariableIPv4(name)
-    elif types[name] == ParseIPv6:
+    elif var_type == ParseIPv6:
         return ParseVariableIPv6(name)
     else:
         return None

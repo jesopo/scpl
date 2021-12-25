@@ -105,9 +105,9 @@ def parse(
                 if token.text in KEYWORDS:
                     keyword_type = KEYWORDS[token.text]
                     operands.append(keyword_type.from_token(token))
-                elif (var_type := types.get(token.text)) is not None:
+                elif (var_type := types.get(token.text)) is None:
                     raise ParserError(token, f"unknown variable {token.text}")
-                elif (var := find_variable(token.text, types)) is None:
+                elif (var := find_variable(token.text, var_type)) is None:
                     # shouldn't happen
                     raise ParserError(token, f"invalid variable type {var_type!r}")
                 else:
