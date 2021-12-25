@@ -180,4 +180,12 @@ class ParserTestBinaryOperator(unittest.TestCase):
         atom = parse(tokenise("1 / 1 - 2"), {})[0]
         self.assertIsInstance(atom, operators.subtract.ParseBinarySubtractFloatInteger)
 
-    # missing: multiply, divide, positive, negative, complement, exponent
+    def test_precedence_8(self):
+        atom = parse(tokenise("1 ** 1 * 2"), {})[0]
+        self.assertIsInstance(atom, operators.multiply.ParseBinaryMultiplyIntegerInteger)
+        atom = parse(tokenise("1 ** 1 / 2"), {})[0]
+        self.assertIsInstance(atom, operators.divide.ParseBinaryDivideIntegerInteger)
+
+    # missing: 9 (positive, negative)
+    # missing: 10 (complement)
+    # missing: 11 (exponent)
