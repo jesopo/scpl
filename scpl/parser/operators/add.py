@@ -1,5 +1,6 @@
 from typing import Dict, Optional
 from .common import ParseBinaryOperator
+from .complement import ParseUnaryComplementRegex
 from ..operands import (ParseAtom, ParseFloat, ParseInteger, ParseRegex,
     ParseString)
 from .cast import ParseCastIntegerFloat, ParseCastStringRegex
@@ -59,9 +60,6 @@ class ParseBinaryAddRegexRegex(ParseBinaryOperator, ParseRegex):
         left = self._left.eval(vars)
         right = self._right.eval(vars)
 
-        if not left.expected == right.expected:
-            raise ValueError("can't concat negated and unnegated regex")
-
         common_flags = left.flags & right.flags
         regex_1      = left.pattern
         regex_2      = right.pattern
@@ -106,8 +104,17 @@ def find_binary_add(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
             return ParseBinaryAddStringRegex(left, right)
         else:
             return None
+    # ParseUnaryComplementRegex is a ParseRegex subtype.
+    # regexes can't concat with complement regexes (at the moment)
+    elif isinstance(left, ParseUnaryComplementRegex):
+        if isinstance(right, ParseUnaryComplementRegex):
+            return ParseBinaryAddRegexRegex(left, right)
+        else:
+            return None
     elif isinstance(left, ParseRegex):
-        if isinstance(right, ParseRegex):
+        if isinstance(right, ParseUnaryComplementRegex):
+            return None
+        elif isinstance(right, ParseRegex):
             return ParseBinaryAddRegexRegex(left, right)
         elif isinstance(right, ParseString):
             return ParseBinaryAddRegexString(left, right)
