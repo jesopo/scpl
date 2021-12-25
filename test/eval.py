@@ -70,3 +70,24 @@ class EvalTestString(unittest.TestCase):
         atoms, deps = parse(tokenise('"asd" =~ /^bsd$/'), {})
         atom = atoms[0].eval({})
         self.assertEqual(atom.value, "")
+
+class EvalTestRegex(unittest.TestCase):
+    def test_match(self):
+        atoms, deps = parse(tokenise("'asd' =~ /^as/"), {})
+        atom = atoms[0].eval({})
+        self.assertIsInstance(atom, ParseString)
+        self.assertEqual(atom.value, "as")
+
+        atoms, deps = parse(tokenise("'asd' =~ /^bs/"), {})
+        atom = atoms[0].eval({})
+        self.assertEqual(atom.value, "")
+
+    def test_complement_match(self):
+        atoms, deps = parse(tokenise("'asd' =~ ~/^as/"), {})
+        atom = atoms[0].eval({})
+        self.assertIsInstance(atom, ParseBool)
+        self.assertEqual(atom.value, False)
+
+        atoms, deps = parse(tokenise("'asd' =~ ~/^bd/"), {})
+        atom = atoms[0].eval({})
+        self.assertEqual(atom.value, True)
