@@ -2,8 +2,9 @@ from enum        import auto, Enum
 from dataclasses import dataclass
 
 class Associativity(Enum):
-    LEFT = 0
-    RIGHT = 1
+    NONE = 0
+    LEFT = 1
+    RIGHT = 2
 
 @dataclass
 class Operator:
@@ -17,7 +18,7 @@ class Operator:
 
 # done in order of precedence
 class OperatorName(Enum):
-    # special - doesn't have an entry in OPERATORS
+    # special
     PARENTHESIS = auto()
     # binary boolean
     BOTH = auto()
@@ -47,6 +48,8 @@ class OperatorName(Enum):
     COMPLEMENT = auto()
 
 OPERATORS = {
+    # PARENTHESIS is subject to special rules due to associativity
+    OperatorName.PARENTHESIS: Operator(0, 0, 0, Associativity.NONE),
     OperatorName.EITHER: Operator(0, 1, 1, Associativity.LEFT),
     OperatorName.BOTH: Operator(1, 1, 1, Associativity.LEFT),
     OperatorName.NOT: Operator(2, 0, 1, Associativity.RIGHT),

@@ -60,8 +60,12 @@ def parse(
             if token.text == "(":
                 operators.append((OperatorName.PARENTHESIS, token))
             else:
-                while operators and not operators[-1] == OperatorName.PARENTHESIS:
-                    _pop_op()
+                while operators:
+                    op_head_name, _ = operators[-1]
+                    if op_head_name == OperatorName.PARENTHESIS:
+                        break
+                    else:
+                        _pop_op()
 
                 if operators:
                     operators.pop()
