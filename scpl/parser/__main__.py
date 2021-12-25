@@ -23,7 +23,7 @@ def main_parser(line: str, types: Dict[str, type]) -> ParseAtom:
     else:
         end = monotonic()
         print(f"parser  : {ast!r}")
-        print(f"deps    : {deps!r}")
+        print(f"deps    : {sorted(deps)}")
         print(f"duration: {(end-start)*1_000_000:.2f}μs")
 
         #ast = ast.precompile()
