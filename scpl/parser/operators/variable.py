@@ -36,7 +36,9 @@ def find_variable(
         name: str, types: Dict[str, type]
         ) -> Optional[ParseAtom]:
 
-    if types[name] == ParseString:
+    if not name in types:
+        return None
+    elif types[name] == ParseString:
         return ParseVariableString(name)
     elif types[name] == ParseInteger:
         return ParseVariableInteger(name)
