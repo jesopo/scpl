@@ -47,6 +47,10 @@ class ParseTestRegex(unittest.TestCase):
         atom = parse(tokenise("!/a/"), {})[0]
         self.assertIsInstance(atom, operators.bools.ParseUnaryNot)
 
+    def test_complement(self):
+        atom = parse(tokenise("~/a/"), {})[0]
+        self.assertIsInstance(atom, operators.complement.ParseUnaryComplementRegex)
+
 class ParseTestRegexset(unittest.TestCase):
     def test_complement(self):
         atom = parse(tokenise("~/a/"), {})[0]
