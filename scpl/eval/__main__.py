@@ -34,7 +34,7 @@ def main_eval(
         sys.exit(1)
     else:
         end = monotonic()
-        print(f"vars    : {var_atoms!r}")
+        print(f"vars    : {vars!r}")
         print(f"eval    : {out!r}")
         print(f"duration: {(end-start)*1_000_000:.2f}μs")
 
