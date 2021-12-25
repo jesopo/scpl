@@ -21,7 +21,7 @@ class ParseCastStringRegex(ParseUnaryOperator, ParseRegex):
         return f"CastRegex({self._atom!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseRegex:
         pattern = re_escape(self._atom.eval(vars).value)
-        return ParseRegex(None, pattern, set())
+        return ParseRegex(None, pattern, set(), True)
 
 class ParseCastStringBool(ParseUnaryOperator, ParseBool):
     def __init__(self, atom: ParseString):

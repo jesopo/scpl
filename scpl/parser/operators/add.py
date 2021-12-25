@@ -59,6 +59,9 @@ class ParseBinaryAddRegexRegex(ParseBinaryOperator, ParseRegex):
         left = self._left.eval(vars)
         right = self._right.eval(vars)
 
+        if not left.expected == right.expected:
+            raise ValueError("can't concat negated and unnegated regex")
+
         common_flags = left.flags & right.flags
         regex_1      = left.pattern
         regex_2      = right.pattern
@@ -73,7 +76,7 @@ class ParseBinaryAddRegexRegex(ParseBinaryOperator, ParseRegex):
                 and left.delimiter == right.delimiter):
             delim = left.delimiter
 
-        return ParseRegex(delim, regex_1 + regex_2, common_flags)
+        return ParseRegex(delim, regex_1 + regex_2, common_flags, left.expected)
 class ParseBinaryAddRegexString(ParseBinaryAddRegexRegex):
     def __init__(self, left: ParseRegex, right: ParseString):
         super().__init__(left, ParseCastStringRegex(right))

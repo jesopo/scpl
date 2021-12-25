@@ -144,12 +144,14 @@ class ParseRegex(ParseAtom):
     def __init__(self,
             delimiter: Optional[str],
             pattern: str,
-            flags: Set[str]):
+            flags: Set[str],
+            expected: bool):
 
         self.delimiter = delimiter
-        self.flags = flags
-        self.compiled = re_compile(pattern)
         self.pattern = pattern
+        self.flags = flags
+        self.expected = expected
+        self.compiled = re_compile(pattern)
 
     def __str__(self) -> str:
         if self.delimiter is not None:
@@ -157,6 +159,8 @@ class ParseRegex(ParseAtom):
         else:
             regex = with_delimiter(self.pattern, REGEX_DELIMS)
         flags = ''.join(self.flags)
+        if not self.expected:
+            regex = f"~{regex}"
         return f"{regex}{flags}"
 
     def __repr__(self) -> str:
@@ -167,7 +171,7 @@ class ParseRegex(ParseAtom):
         delim, r = token.text[0], token.text[1:]
         r, flags = r.rsplit(delim, 1)
 
-        atom = ParseRegex(delim, r, set(flags))
+        atom = ParseRegex(delim, r, set(flags), True)
         atom.token = token
         return atom
 
@@ -175,16 +179,14 @@ class ParseRegex(ParseAtom):
         return self
 
 class ParseRegexset(ParseAtom):
-    def __init__(self, regexes: Set[Tuple[bool, ParseRegex]]):
+    def __init__(self, regexes: Set[ParseRegex]) :
         self.regexes = regexes
     def __repr__(self) -> str:
         outs: List[str] = []
-        for invert, regex in sorted(self.regexes):
-            out = str(regex)
-            if invert:
-                out = f"~{out}"
-            outs.append(out)
-        return f"Regexset({', '.join(outs)})"
+        for regex in self.regexes:
+            outs.append(str(regex))
+        outs.sort()
+        return f"Regexset({', '.join(outs)!r})"
 
     def eval(self, vars: Dict[str, ParseAtom]) -> "ParseRegexset":
         return self
