@@ -12,8 +12,9 @@ class ParseBinaryMatchStringUnregex(ParseBinaryOperator, ParseBool):
         return f"Match({self._left!r}, {self._right!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
         reference = self._left.eval(vars).value
-        match = bool(self._right.eval(vars).compiled.search(reference))
-        return ParseBool(not match)
+        regex = self._right.eval(vars)
+        match = regex.compiled.search(reference)
+        return ParseBool(match == regex.expected)
 
 class ParseBinaryMatchStringRegex(ParseBinaryOperator, ParseString):
     def __init__(self, left: ParseString, right: ParseRegex):
