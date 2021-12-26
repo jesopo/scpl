@@ -13,7 +13,7 @@ class ParseBinaryMatchStringUnregex(ParseBinaryOperator, ParseBool):
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
         reference = self._left.eval(vars).value
         regex = self._right.eval(vars)
-        match = regex.compiled.search(reference)
+        match = bool(regex.compiled.search(reference))
         return ParseBool(match == regex.expected)
 
 class ParseBinaryMatchStringRegex(ParseBinaryOperator, ParseString):
