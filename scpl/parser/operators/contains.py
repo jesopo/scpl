@@ -43,13 +43,8 @@ def find_binary_contains(left: ParseAtom, right: ParseAtom) -> Optional[ParseAto
             return ParseBinaryContainsHashSet(cast, right)
         else:
             return None
-    elif isinstance(left, ParseString):
-        if isinstance(right, ParseString):
-            return ParseBinaryContainsStringString(left, right)
-        elif isinstance(right, ParseSetString):
-            return ParseBinaryContainsStringSet(left, right)
-        else:
-            return None
+    elif isinstance(left, ParseString) and isinstance(right, ParseString):
+        return ParseBinaryContainsStringString(left, right)
     elif isinstance(left, ParseIPv4) and isinstance(right, ParseCIDRv4):
         return ParseBinaryContainsIPCIDR(left, right)
     elif isinstance(left, ParseIPv6) and isinstance(right, ParseCIDRv6):
