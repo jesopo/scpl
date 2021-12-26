@@ -68,7 +68,6 @@ def parse(
                 operators.append((OperatorName.SCOPE, token))
             else:
                 # scope closer
-                scope_atoms_n = 0
                 scope_atoms: Deque[ParseAtom] = deque()
 
                 while operators:
@@ -81,24 +80,19 @@ def parse(
                                 op_head_token,
                                 f"mismatched scope terminator '{op_head_token.text}'"
                             )
+                    elif op_head_name == OperatorName.COMMA:
+                        operators.pop()
+                        scope_atoms.appendleft(operands.pop())
                     else:
-                        scope_atoms_n += 1
-                        if op_head_name == OperatorName.COMMA:
-                            operators.pop()
-                            scope_atoms.appendleft(operands.pop())
-                        else:
-                            _pop_op()
+                        _pop_op()
 
                 if operators:
-                    if scope_atoms_n:
-                        scope_atoms.appendleft(operands.pop())
-
                     op_head_name, op_head_token = operators.pop()
 
-                    if op_head_token.text == "{":
-                        if len(scope_atoms) == 0:
-                            raise ParserError(token, "empty set literal")
-                        elif (atom := find_set(scope_atoms)) is not None:
+                    if op_head_token.text == "(":
+                        operands.extend(scope_atoms)
+                    elif op_head_token.text == "{":
+                        if (atom := find_set(scope_atoms)) is not None:
                             operands.append(atom)
                         else:
                             raise ParserError(token, "invalid set content")
@@ -138,6 +132,14 @@ def parse(
 
         elif last_is_operator or not operands:
             last_is_operator = False
+
+            if operators:
+                op_head_name, _ = operators[-1]
+                if op_head_name == OperatorName.SCOPE:
+                    # put a falsified comma between scope opener and the first item.
+                    # commas are used to know how many atoms are in a scope
+                    operators.append((OperatorName.COMMA, token))
+
             if isinstance(token, TokenWord):
                 if token.text in KEYWORDS:
                     keyword_type = KEYWORDS[token.text]
