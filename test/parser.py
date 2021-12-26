@@ -3,7 +3,7 @@ from re        import compile as re_compile
 from ipaddress import ip_address, ip_network
 
 from scpl.lexer import tokenise
-from scpl.parser import parse
+from scpl.parser import parse, ParserError
 from scpl.parser import (ParseInteger, ParseCIDRv4, ParseCIDRv6, ParseIPv4, ParseIPv6,
     ParseFloat, ParseRegex, ParseString)
 
@@ -78,3 +78,17 @@ class ParserTestCIDRv6(unittest.TestCase):
 
     def test_invalid(self):
         self.assertRaises(ValueError, lambda: parse(tokenise("fd84:9d71:8b8:1::1/129"), {}))
+
+class ParserTestParenthesis(unittest.TestCase):
+    def test_unwrap(self):
+        atoms, deps = parse(tokenise("(1)"), {})
+        self.assertIsInstance(atoms[0], ParseInteger)
+
+    def test_nested(self):
+        atoms, deps = parse(tokenise("((1))"), {})
+        self.assertIsInstance(atoms[0], ParseInteger)
+
+    def test_unfinished(self):
+        with self.assertRaises(ParserError):
+            atoms, deps = parse(tokenise("(1"), {})
+
