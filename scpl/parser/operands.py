@@ -23,7 +23,8 @@ class ParseAtom:
     token: Optional[Token] = None
 
     def __eq__(self, other: object):
-        return hash(self) == hash(other)
+        return (type(self) == type(other)
+            and hash(self) == hash(other))
 
     @staticmethod
     def from_token(token: Token) -> "ParseAtom":
