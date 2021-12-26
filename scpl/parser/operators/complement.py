@@ -24,6 +24,12 @@ class ParseUnaryComplementRegex(ParseUnaryOperator, ParseRegex):
 def find_unary_complement(atom: ParseAtom) -> Optional[ParseAtom]:
     if isinstance(atom, ParseInteger):
         return ParseUnaryComplementInteger(atom)
+    # don't double complement regexes.
+    # a normal regex returns the substring that matched but a complemented
+    # regex is zero-width because it's "does not match". if we shorten
+    # comp(comp(regex)) to just a regex here, we preserve the substring stuff.
+    elif isinstance(atom, ParseUnaryComplementRegex):
+        return atom._atom
     elif isinstance(atom, ParseRegex):
         return ParseUnaryComplementRegex(atom)
     else:

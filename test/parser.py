@@ -51,6 +51,14 @@ class ParseTestRegex(unittest.TestCase):
         atoms, deps = parse(tokenise("~/a/"), {})
         self.assertIsInstance(atoms[0], operators.complement.ParseUnaryComplementRegex)
 
+    def test_complement_double(self):
+        atoms, deps = parse(tokenise("~~/a/"), {})
+        self.assertIsInstance(atoms[0], ParseRegex)
+        self.assertEqual(atoms[0].pattern, "a")
+        self.assertEqual(atoms[0].delimiter, "/")
+        self.assertEqual(atoms[0].compiled, re_compile("a"))
+        self.assertEqual(atoms[0].flags, set())
+
 class ParseTestRegexset(unittest.TestCase):
     def test_complement(self):
         atoms, deps = parse(tokenise("~/a/"), {})
