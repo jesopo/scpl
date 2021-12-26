@@ -107,6 +107,21 @@ class ParseOperatorTestComplement(unittest.TestCase):
         atoms, deps = parse(tokenise("~~/a/"), {})
         self.assertIsInstance(atoms[0], ParseRegex)
 
+class ParseOperatorTestAnd(unittest.TestCase):
+    def test_and_integer_integer(self):
+        atoms, deps = parse(tokenise("1 & 1"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryAndIntegerInteger)
+
+class ParseOperatorTestXor(unittest.TestCase):
+    def test_and_integer_integer(self):
+        atoms, deps = parse(tokenise("1 ^ 1"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryXorIntegerInteger)
+
+class ParseOperatorTestOr(unittest.TestCase):
+    def test_and_integer_integer(self):
+        atoms, deps = parse(tokenise("1 | 1"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryOrIntegerInteger)
+
 class ParseOperatorTestGreater(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 > 1"), {})
