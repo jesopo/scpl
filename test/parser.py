@@ -37,6 +37,18 @@ class ParserTestInteger(unittest.TestCase):
         self.assertIsInstance(atoms[0], ParseInteger)
         self.assertEqual(atoms[0].value, 123)
 
+class ParserTestHex(unittest.TestCase):
+    def test(self):
+        atoms, deps = parse(tokenise("0xff"), {})
+        self.assertIsInstance(atoms[0], ParseInteger)
+        self.assertEqual(atoms[0].value, 255)
+
+class ParserTestDuration(unittest.TestCase):
+    def test(self):
+        atoms, deps = parse(tokenise("1w2d3h4m5s"), {})
+        self.assertIsInstance(atoms[0], ParseInteger)
+        self.assertEqual(atoms[0].value, 788645)
+
 class ParserTestFloat(unittest.TestCase):
     def test(self):
         atoms, deps = parse(tokenise("123.0"), {})
