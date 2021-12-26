@@ -61,23 +61,25 @@ class ParseCastHash(ParseUnaryOperator):
         self._base_atom = atom
     def __repr__(self) -> str:
         return f"CastHash({self._base_atom!r})"
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
+        raise NotImplementedError()
 class ParseCastHashInteger(ParseCastHash, ParseInteger):
     def __init__(self, atom: ParseInteger):
         super().__init__(atom)
         self._atom = atom
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
         return ParseInteger(hash(self._atom.eval(vars)))
 class ParseCastHashString(ParseCastHash, ParseInteger):
     def __init__(self, atom: ParseString):
         super().__init__(atom)
         self._atom = atom
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
         return ParseInteger(hash(self._atom.eval(vars)))
 class ParseCastHashRegex(ParseCastHash, ParseInteger):
     def __init__(self, atom: ParseRegex):
         super().__init__(atom)
         self._atom = atom
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
         return ParseInteger(hash(self._atom.eval(vars)))
 
 def find_cast_bool(atom: ParseAtom) -> Optional[ParseBool]:
