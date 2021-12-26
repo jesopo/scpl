@@ -42,6 +42,8 @@ def tokenise(expression: str) -> Deque[Token]:
                 TokenIPv4(char_index, token_last),
                 TokenIPv6(char_index, token_last),
                 TokenParenthesis(char_index, token_last),
+                TokenBracket(char_index, token_last),
+                TokenBrace(char_index, token_last),
                 TokenWord(char_index, token_last),
                 TokenOperator(char_index, token_last),
                 TokenSpace(char_index, token_last),

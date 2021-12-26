@@ -22,6 +22,9 @@ class ParseBadOperandError(Exception):
 class ParseAtom:
     token: Optional[Token] = None
 
+    def __eq__(self, other: object):
+        return hash(self) == hash(other)
+
     @staticmethod
     def from_token(token: Token) -> "ParseAtom":
         raise NotImplementedError()
@@ -50,6 +53,8 @@ class ParseInteger(ParseAtom):
         self.value = value
     def __repr__(self) -> str:
         return f"Integer({self.value})"
+    def __hash__(self) -> int:
+        return hash(self.value)
 
     @staticmethod
     def from_token(token: Token) -> "ParseInteger":
@@ -107,6 +112,8 @@ class ParseFloat(ParseAtom):
         self.value = value
     def __repr__(self) -> str:
         return f"Float({self.value})"
+    def __hash__(self) -> int:
+        return hash(self.value)
 
     @staticmethod
     def from_token(token: Token) -> "ParseFloat":
@@ -130,6 +137,8 @@ class ParseString(ParseAtom):
             return f"{self.delimiter}{self.value}{self.delimiter}"
         else:
             return with_delimiter(self.value, STRING_DELIMS)
+    def __hash__(self) -> int:
+        return hash(self.value)
 
     @staticmethod
     def from_token(token: Token) -> "ParseString":
@@ -165,6 +174,8 @@ class ParseRegex(ParseAtom):
 
     def __repr__(self) -> str:
         return f"Regex({str(self)})"
+    def __hash__(self) -> int:
+        return hash(self.compiled)
 
     @staticmethod
     def from_token(token: Token) -> "ParseRegex":
@@ -194,6 +205,8 @@ class ParseRegexset(ParseAtom):
 class ParseIP(ParseAtom):
     def __init__(self, ip: int):
         self.integer = ip
+    def __hash__(self) -> int:
+        return hash(self.integer)
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIP":
         return self
@@ -255,8 +268,12 @@ class ParseCIDR(ParseAtom):
         # & here to remove any host bits
         self.integer = network & self.mask
 
+        self._hash = hash((self.prefix, self.integer))
+
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDR":
         return self
+    def __hash__(self) -> int:
+        return self._hash
 
 class ParseCIDRv4(ParseCIDR):
     def __init__(self,

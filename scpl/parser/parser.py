@@ -2,14 +2,20 @@ from collections import deque
 from dataclasses import dataclass
 from typing      import Deque, Generic, List, Sequence, Set, TypeVar
 
-from .operators  import find_binary_operator, find_unary_operator, find_variable
+from .operators  import find_binary_operator, find_unary_operator, find_variable, find_set
 from .operands   import *
 
 from ..common.operators import (Associativity, OPERATORS, OPERATORS_BINARY,
     OPERATORS_UNARY, OperatorName)
 from ..lexer import (Token, TokenDuration, TokenHex, TokenIPv4, TokenIPv6, TokenNumber,
-    TokenOperator, TokenParenthesis, TokenRegex, TokenString, TokenTransparent,
-    TokenWord)
+    TokenOperator, TokenParenthesis, TokenRegex, TokenScope, TokenString,
+    TokenTransparent, TokenWord)
+
+SCOPE_COUNTERPART = {
+    ")": "(",
+    "]": "[",
+    "}": "{"
+}
 
 class ParserError(Exception):
     def __init__(self,
@@ -56,21 +62,48 @@ def parse(
         if isinstance(token, TokenTransparent):
             pass
 
-        elif isinstance(token, TokenParenthesis):
-            if token.text == "(":
-                operators.append((OperatorName.PARENTHESIS, token))
+        elif isinstance(token, TokenScope):
+            if not token.text in SCOPE_COUNTERPART:
+                # scope opener
+                operators.append((OperatorName.SCOPE, token))
             else:
+                # scope closer
+                scope_atoms_n = 0
+                scope_atoms: Deque[ParseAtom] = deque()
+
                 while operators:
-                    op_head_name, _ = operators[-1]
-                    if op_head_name == OperatorName.PARENTHESIS:
-                        break
+                    op_head_name, op_head_token = operators[-1]
+                    if op_head_name == OperatorName.SCOPE:
+                        if SCOPE_COUNTERPART[token.text] == op_head_token.text:
+                            break
+                        else:
+                            raise ParserError(
+                                op_head_token,
+                                f"mismatched scope terminator '{op_head_token.text}'"
+                            )
                     else:
-                        _pop_op()
+                        scope_atoms_n += 1
+                        if op_head_name == OperatorName.COMMA:
+                            operators.pop()
+                            scope_atoms.appendleft(operands.pop())
+                        else:
+                            _pop_op()
 
                 if operators:
-                    operators.pop()
+                    if scope_atoms_n:
+                        scope_atoms.appendleft(operands.pop())
+
+                    op_head_name, op_head_token = operators.pop()
+
+                    if op_head_token.text == "{":
+                        if len(scope_atoms) == 0:
+                            raise ParserError(token, "empty set literal")
+                        elif (atom := find_set(scope_atoms)) is not None:
+                            operands.append(atom)
+                        else:
+                            raise ParserError(token, "invalid set content")
                 else:
-                    raise ParserError(token, "unexpected closing parenthesis")
+                    raise ParserError(token, "unexpected scope terminator")
 
         elif isinstance(token, TokenOperator):
             if last_is_operator or not operands:
@@ -148,8 +181,10 @@ def parse(
 
     while operators:
         op_head_name, op_head_token = operators[-1]
-        if op_head_name == OperatorName.PARENTHESIS:
-            raise ParserError(op_head_token, "unclosed parenthesis")
+        if op_head_name == OperatorName.SCOPE:
+            raise ParserError(op_head_token, "unclosed scope")
+        elif op_head_name == OperatorName.COMMA:
+            raise ParserError(op_head_token, "comma in root scope")
         else:
             _pop_op()
 

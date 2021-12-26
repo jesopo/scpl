@@ -19,7 +19,8 @@ class Operator:
 # done in order of precedence
 class OperatorName(Enum):
     # special
-    PARENTHESIS = auto()
+    SCOPE = auto()
+    COMMA = auto()
     # binary boolean
     BOTH = auto()
     EITHER = auto()
@@ -48,8 +49,9 @@ class OperatorName(Enum):
     COMPLEMENT = auto()
 
 OPERATORS = {
-    # PARENTHESIS is subject to special rules due to associativity
-    OperatorName.PARENTHESIS: Operator(0, 0, 0, Associativity.NONE),
+    # SCOPE ([]{}()) is subject to special rules due to associativity
+    OperatorName.SCOPE: Operator(0, 0, 0, Associativity.NONE),
+    OperatorName.COMMA: Operator(0, 0, 0, Associativity.NONE),
     OperatorName.EITHER: Operator(0, 1, 1, Associativity.LEFT),
     OperatorName.BOTH: Operator(1, 1, 1, Associativity.LEFT),
     OperatorName.NOT: Operator(2, 0, 1, Associativity.RIGHT),
@@ -73,6 +75,7 @@ OPERATORS = {
 }
 
 OPERATORS_BINARY = {
+    ",":  OperatorName.COMMA,
     "&&": OperatorName.BOTH,
     "||": OperatorName.EITHER,
     "in": OperatorName.CONTAINS,

@@ -26,6 +26,7 @@ from .complement import find_unary_complement
 
 # ✨ special
 from .variable import find_variable
+from .set import find_set
 
 def find_binary_operator(
         op_name: OperatorName, left: ParseAtom, right: ParseAtom

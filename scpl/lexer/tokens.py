@@ -1,5 +1,5 @@
 import string
-from typing import Optional
+from typing import Optional, Set
 from ..common.operators import OPERATORS_BINARY, OPERATORS_UNARY
 
 CHARS_SPACE    = set(" ")
@@ -40,16 +40,33 @@ class TokenSpace(TokenTransparent):
         else:
             return "not a space"
 
-class TokenParenthesis(Token):
+class TokenSingle(Token):
+    def __init__(self,
+            index: int,
+            last: Optional[Token],
+            wanted: Set[str]):
+        super().__init__(index, last)
+        self._wanted = wanted
     def push(self, next: str) -> Optional[str]:
         if self.text:
             return "already finished"
-        elif next in {"(", ")"}:
+        elif next in self._wanted:
             self.text    += next
             self.complete = True
             return None
         else:
-            return "not a parenthesis"
+            return "not a wanted character"
+class TokenScope(TokenSingle):
+    pass
+class TokenParenthesis(TokenScope):
+    def __init__(self, index: int, last: Optional[Token]):
+        super().__init__(index, last, {"(", ")"})
+class TokenBracket(TokenScope):
+    def __init__(self, index: int, last: Optional[Token]):
+        super().__init__(index, last, {"[", "]"})
+class TokenBrace(TokenScope):
+    def __init__(self, index: int, last: Optional[Token]):
+        super().__init__(index, last, {"{", "}"})
 
 class TokenWord(Token):
     def push(self, next: str) -> Optional[str]:
@@ -181,7 +198,7 @@ class TokenRegex(Token):
             else:
                 self._escape = False
             return None
-        elif next in CHARS_WORD | CHARS_DIGIT | CHARS_SPACE | set("\\()"):
+        elif next in CHARS_WORD | CHARS_DIGIT | CHARS_SPACE | set("\\()[]{}"):
             return "invalid regex delimiter"
         elif next in OPERATORS_UNARY:
             return "invalid regex delimiter"
