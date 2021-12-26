@@ -1,51 +1,15 @@
 from typing import cast, Dict, Optional, Sequence, Set
+from .cast import find_cast_hash, ParseCastHash
 from ..operands import (ParseAtom, ParseFloat, ParseInteger, ParseIPv4, ParseIPv6,
     ParseString)
 
 class ParseSet(ParseAtom):
-    def __init__(self, atoms: Sequence[ParseAtom]):
-        self._base_atoms = atoms
+    def __init__(self, atoms: Sequence[ParseCastHash]):
+        self._atoms = atoms
     def __repr__(self) -> str:
-        return f"Set({', '.join(repr(a) for a in self._base_atoms)})"
-    def _hashes(self) -> Sequence[int]:
-        raise NotImplementedError()
+        return f"Set({', '.join(repr(a.atom) for a in self._atoms)})"
     def eval(self, vars: Dict[str, ParseAtom]) -> Set[int]:
-        return set(self._hashes())
-
-class ParseSetInteger(ParseSet):
-    def __init__(self, atoms: Sequence[ParseInteger]):
-        super().__init__(atoms)
-        self._atoms = atoms
-    def _hashes(self):
-        return [hash(a) for a in self._atoms]
-
-class ParseSetFloat(ParseSet):
-    def __init__(self, atoms: Sequence[ParseFloat]):
-        super().__init__(atoms)
-        self._atoms = atoms
-    def _hashes(self):
-        return [hash(a) for a in self._atoms]
-
-class ParseSetString(ParseSet):
-    def __init__(self, atoms: Sequence[ParseString]):
-        super().__init__(atoms)
-        self._atoms = atoms
-    def _hashes(self):
-        return [hash(a) for a in self._atoms]
-
-class ParseSetIPv4(ParseSet):
-    def __init__(self, atoms: Sequence[ParseIPv4]):
-        super().__init__(atoms)
-        self._atoms = atoms
-    def _hashes(self):
-        return [hash(a) for a in self._atoms]
-
-class ParseSetIPv6(ParseSet):
-    def __init__(self, atoms: Sequence[ParseIPv6]):
-        super().__init__(atoms)
-        self._atoms = atoms
-    def _hashes(self):
-        return [hash(a) for a in self._atoms]
+        return set(a.eval(vars).value for a in self._atoms)
 
 def _all_isinstance(atoms: Sequence[ParseAtom], atype: type) -> bool:
     for atom in atoms:
@@ -54,15 +18,17 @@ def _all_isinstance(atoms: Sequence[ParseAtom], atype: type) -> bool:
     return True
 
 def find_set(atoms: Sequence[ParseAtom]) -> Optional[ParseAtom]:
-    if _all_isinstance(atoms, ParseInteger):
-        return ParseSetInteger(cast(Sequence[ParseInteger], atoms))
-    elif _all_isinstance(atoms, ParseFloat):
-        return ParseSetFloat(cast(Sequence[ParseFloat], atoms))
-    elif _all_isinstance(atoms, ParseString):
-        return ParseSetString(cast(Sequence[ParseString], atoms))
-    elif _all_isinstance(atoms, ParseIPv4):
-        return ParseSetIPv4(cast(Sequence[ParseIPv4], atoms))
-    elif _all_isinstance(atoms, ParseIPv6):
-        return ParseSetIPv6(cast(Sequence[ParseIPv6], atoms))
+    if len(atoms) == 0:
+        return ParseSet([])
+    elif (_all_isinstance(atoms, ParseInteger)
+            or _all_isinstance(atoms, ParseFloat)
+            or _all_isinstance(atoms, ParseString)
+            or _all_isinstance(atoms, ParseIPv4)
+            or _all_isinstance(atoms, ParseIPv6)):
+
+        if all(casts := [find_cast_hash(a) for a in atoms]):
+            return ParseSet(cast(Sequence[ParseCastHash], casts))
+        else:
+            return None
     else:
         return None

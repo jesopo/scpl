@@ -58,9 +58,9 @@ class ParseCastFloatBool(ParseUnaryOperator, ParseBool):
 
 class ParseCastHash(ParseUnaryOperator):
     def __init__(self, atom: ParseAtom):
-        self._base_atom = atom
+        self.atom = atom
     def __repr__(self) -> str:
-        return f"CastHash({self._base_atom!r})"
+        return f"CastHash({self.atom!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
         raise NotImplementedError()
 class ParseCastHashInteger(ParseCastHash, ParseInteger):
