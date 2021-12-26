@@ -56,6 +56,30 @@ class ParseCastFloatBool(ParseUnaryOperator, ParseBool):
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
         return ParseBool(not self._atom.eval(vars).value == 0.0)
 
+class ParseCastHash(ParseUnaryOperator):
+    def __init__(self, atom: ParseAtom):
+        self._base_atom = atom
+    def __repr__(self) -> str:
+        return f"CastHash({self._base_atom!r})"
+class ParseCastHashInteger(ParseCastHash, ParseInteger):
+    def __init__(self, atom: ParseInteger):
+        super().__init__(atom)
+        self._atom = atom
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+        return ParseInteger(hash(self._atom.eval(vars)))
+class ParseCastHashString(ParseCastHash, ParseInteger):
+    def __init__(self, atom: ParseString):
+        super().__init__(atom)
+        self._atom = atom
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+        return ParseInteger(hash(self._atom.eval(vars)))
+class ParseCastHashRegex(ParseCastHash, ParseInteger):
+    def __init__(self, atom: ParseRegex):
+        super().__init__(atom)
+        self._atom = atom
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+        return ParseInteger(hash(self._atom.eval(vars)))
+
 def find_cast_bool(atom: ParseAtom) -> Optional[ParseBool]:
     if isinstance(atom, ParseBool):
         return atom
@@ -67,5 +91,15 @@ def find_cast_bool(atom: ParseAtom) -> Optional[ParseBool]:
         return ParseCastIntegerBool(atom)
     elif isinstance(atom, ParseFloat):
         return ParseCastFloatBool(atom)
+    else:
+        return None
+
+def find_cast_hash(atom: ParseAtom) -> Optional[ParseCastHash]:
+    if isinstance(atom, ParseInteger):
+        return ParseCastHashInteger(atom)
+    elif isinstance(atom, ParseString):
+        return ParseCastHashString(atom)
+    elif isinstance(atom, ParseRegex):
+        return ParseCastHashRegex(atom)
     else:
         return None
