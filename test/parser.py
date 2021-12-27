@@ -3,7 +3,7 @@ from re        import compile as re_compile
 from ipaddress import ip_address, ip_network
 
 from scpl.lexer import tokenise
-from scpl.parser import parse, ParserError
+from scpl.parser import operators, parse, ParserError
 from scpl.parser import (ParseInteger, ParseCIDRv4, ParseCIDRv6, ParseIPv4, ParseIPv6,
     ParseFloat, ParseRegex, ParseString)
 
@@ -104,3 +104,31 @@ class ParserTestParenthesis(unittest.TestCase):
         with self.assertRaises(ParserError):
             atoms, deps = parse(tokenise("(1"), {})
 
+class ParserTestSet(unittest.TestCase):
+    def test_empty(self):
+        atoms, deps = parse(tokenise("{}"), {})
+        self.assertIsInstance(atoms[0], operators.set.ParseSet)
+
+    def test_integer(self):
+        atoms, deps = parse(tokenise("{1, 2}"), {})
+        self.assertIsInstance(atoms[0], operators.set.ParseSetInteger)
+
+    def test_float(self):
+        atoms, deps = parse(tokenise("{1.0, 2.0}"), {})
+        self.assertIsInstance(atoms[0], operators.set.ParseSetFloat)
+
+    def test_string(self):
+        atoms, deps = parse(tokenise('{"a", "b"}'), {})
+        self.assertIsInstance(atoms[0], operators.set.ParseSetString)
+
+    def test_ipv4(self):
+        atoms, deps = parse(tokenise("{10.84.1.1, 10.84.1.2}"), {})
+        self.assertIsInstance(atoms[0], operators.set.ParseSetIPv4)
+
+    def test_ipv6(self):
+        atoms, deps = parse(tokenise("{fd84:9d71:8b8:1::1, fd84:9d71:8b8:1::2}"), {})
+        self.assertIsInstance(atoms[0], operators.set.ParseSetIPv6)
+
+    def test_invalid_mixed(self):
+        with self.assertRaises(TypeError):
+            parse(tokenise("{1, 1.0}"), {})
