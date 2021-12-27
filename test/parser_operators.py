@@ -1,7 +1,7 @@
 import unittest
 
 from scpl.lexer import tokenise
-from scpl.parser import operators, parse
+from scpl.parser import operators, parse, ParserError
 from scpl.parser import (ParseInteger, ParseIPv4, ParseIPv6, ParseBool, ParseFloat,
     ParseRegex, ParseString)
 
@@ -313,6 +313,15 @@ class ParserTestBinaryOperator(unittest.TestCase):
         self.assertIsInstance(atoms[0], operators.multiply.ParseBinaryMultiplyIntegerInteger)
         atoms, deps = parse(tokenise("1 ** 1 / 2"), {})
         self.assertIsInstance(atoms[0], operators.divide.ParseBinaryDivideIntegerInteger)
+
+    def test_precedence_9(self):
+        with self.assertRaises(ParserError):
+            parse(tokenise("1 ** !1"), {})
+
+        atoms, deps = parse(tokenise("1 ** +1"), {})
+        self.assertIsInstance(atoms[0], operators.exponent.ParseBinaryExponentIntegerInteger)
+        atoms, deps = parse(tokenise("1 ** -1"), {})
+        self.assertIsInstance(atoms[0], operators.exponent.ParseBinaryExponentIntegerNegative)
 
     # missing: 9 (positive, negative)
     # missing: 10 (complement)
