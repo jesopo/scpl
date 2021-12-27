@@ -2,6 +2,7 @@ from collections import deque
 from dataclasses import dataclass
 from typing      import Deque, Generic, List, Sequence, Set, TypeVar
 
+from .common     import ParserError, ParserErrorWithIndex, ParserTypeError
 from .operators  import find_binary_operator, find_unary_operator, find_variable, find_set
 from .operands   import *
 
@@ -17,19 +18,12 @@ SCOPE_COUNTERPART = {
     "}": "{"
 }
 
-class ParserError(Exception):
-    def __init__(self,
-            token: Token,
-            error: str):
-        self.token = token
-        super().__init__(error)
-
 def parse(
         tokens: Deque[Token],
         types: Dict[str, type]
         ) -> Tuple[Sequence[ParseAtom], Set[str]]:
 
-    operands:  Deque[ParseAtom] = deque()
+    operands: Deque[Tuple[ParseAtom, Token]] = deque()
     operators: Deque[Tuple[OperatorName, Token]] = deque()
     dependencies: Set[str] = set()
 
@@ -40,17 +34,17 @@ def parse(
         if op_head.operands() == 1:
             if not operands:
                 raise ParserError(op_head_token, "missing unary operand")
-            right = operands.pop()
-            atom  = find_unary_operator(op_head_name, right)
+            right, _ = operands.pop()
+            atom = find_unary_operator(op_head_name, right)
         else:
             if not len(operands) > 1:
                 raise ParserError(op_head_token, "missing binary operand")
-            right = operands.pop()
-            left  = operands.pop()
-            atom  = find_binary_operator(op_head_name, left, right)
+            right, _ = operands.pop()
+            left, _ = operands.pop()
+            atom = find_binary_operator(op_head_name, left, right)
 
         if atom is not None:
-            operands.append(atom)
+            operands.append((atom, op_head_token))
             return op_head_name
         else:
             raise ParserError(op_head_token, "invalid operands for operator")
@@ -68,7 +62,7 @@ def parse(
                 operators.append((OperatorName.SCOPE, token))
             else:
                 # scope closer
-                scope_atoms: Deque[ParseAtom] = deque()
+                scope_atoms: Deque[Tuple[ParseAtom, Token]] = deque()
 
                 while operators:
                     op_head_name, op_head_token = operators[-1]
@@ -92,8 +86,14 @@ def parse(
                     if op_head_token.text == "(":
                         operands.extend(scope_atoms)
                     elif op_head_token.text == "{":
-                        if (atom := find_set(scope_atoms)) is not None:
-                            operands.append(atom)
+                        try:
+                            atom = find_set([atom for atom, _ in scope_atoms])
+                        except ParserErrorWithIndex as e:
+                            _, bad_token = scope_atoms[e.index]
+                            raise ParserTypeError(bad_token, str(e))
+
+                        if atom is not None:
+                            operands.append((atom, op_head_token))
                         else:
                             raise ParserError(token, "invalid set content")
                 else:
@@ -143,7 +143,7 @@ def parse(
             if isinstance(token, TokenWord):
                 if token.text in KEYWORDS:
                     keyword_type = KEYWORDS[token.text]
-                    operands.append(keyword_type.from_token(token))
+                    operands.append((keyword_type.from_text(token.text), token))
                 elif (var_type := types.get(token.text)) is None:
                     raise ParserError(token, f"unknown variable {token.text}")
                 elif (var := find_variable(token.text, var_type)) is None:
@@ -151,31 +151,31 @@ def parse(
                     raise ParserError(token, f"invalid variable type {var_type!r}")
                 else:
                     dependencies.add(token.text)
-                    operands.append(var)
+                    operands.append((var, token))
 
             elif isinstance(token, TokenNumber):
                 if "." in token.text:
-                    operands.append(ParseFloat.from_token(token))
+                    operands.append((ParseFloat.from_text(token.text), token))
                 else:
-                    operands.append(ParseInteger.from_token(token))
+                    operands.append((ParseInteger.from_text(token.text), token))
             elif isinstance(token, TokenHex):
-                operands.append(ParseHex.from_token(token))
+                operands.append((ParseHex.from_text(token.text), token))
             elif isinstance(token, TokenDuration):
-                operands.append(ParseDuration.from_token(token))
+                operands.append((ParseDuration.from_text(token.text), token))
             elif isinstance(token, TokenString):
-                operands.append(ParseString.from_token(token))
+                operands.append((ParseString.from_text(token.text), token))
             elif isinstance(token, TokenRegex):
-                operands.append(ParseRegex.from_token(token))
+                operands.append((ParseRegex.from_text(token.text), token))
             elif isinstance(token, TokenIPv4):
                 if "/" in token.text:
-                    operands.append(ParseCIDRv4.from_token(token))
+                    operands.append((ParseCIDRv4.from_text(token.text), token))
                 else:
-                    operands.append(ParseIPv4.from_token(token))
+                    operands.append((ParseIPv4.from_text(token.text), token))
             elif isinstance(token, TokenIPv6):
                 if "/" in token.text:
-                    operands.append(ParseCIDRv6.from_token(token))
+                    operands.append((ParseCIDRv6.from_text(token.text), token))
                 else:
-                    operands.append(ParseIPv6.from_token(token))
+                    operands.append((ParseIPv6.from_text(token.text), token))
             else:
                 raise ParserError(token, "unknown token")
         else:
@@ -190,4 +190,4 @@ def parse(
         else:
             _pop_op()
 
-    return list(operands), dependencies
+    return list(atom for atom, _ in operands), dependencies

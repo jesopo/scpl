@@ -1,6 +1,7 @@
 from typing import cast, Dict, Optional, Sequence, Set
 from .cast import (ParseCastHash, ParseCastHashFloat, ParseCastHashInteger,
     ParseCastHashIPv4, ParseCastHashIPv6, ParseCastHashString)
+from ..common import ParserErrorWithIndex
 from ..operands import (ParseAtom, ParseFloat, ParseInteger, ParseIPv4, ParseIPv6,
     ParseString)
 
@@ -32,7 +33,9 @@ def _all_isinstance(atoms: Sequence[ParseAtom], atype: type) -> bool:
     for i, atom in enumerate(atoms):
         if not isinstance(atom, atype):
             if i > 0:
-                raise TypeError(f"{type(atom).__name__} in {atype.__name__} set")
+                raise ParserErrorWithIndex(
+                    i, f"{type(atom).__name__} in {atype.__name__} set"
+                )
             else:
                 return False
     return True

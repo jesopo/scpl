@@ -3,7 +3,7 @@ from re        import compile as re_compile
 from ipaddress import ip_address, ip_network
 
 from scpl.lexer import tokenise
-from scpl.parser import operators, parse, ParserError
+from scpl.parser import operators, parse, ParserError, ParserTypeError
 from scpl.parser import (ParseInteger, ParseCIDRv4, ParseCIDRv6, ParseIPv4, ParseIPv6,
     ParseFloat, ParseRegex, ParseString)
 
@@ -130,5 +130,5 @@ class ParserTestSet(unittest.TestCase):
         self.assertIsInstance(atoms[0], operators.set.ParseSetIPv6)
 
     def test_invalid_mixed(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ParserTypeError):
             parse(tokenise("{1, 1.0}"), {})

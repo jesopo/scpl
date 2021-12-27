@@ -8,7 +8,6 @@ from typing      import Any, Deque, Dict, List, Optional, Set, Tuple, Type
 from typing      import OrderedDict as TOrderedDict
 
 from ..common.util import with_delimiter
-from ..lexer import Token
 
 # used for pretty printing when we don't have a delim already.
 # it'll pick whichever doesn't already exist in the string, or pick [0] and
@@ -20,14 +19,12 @@ class ParseBadOperandError(Exception):
     pass
 
 class ParseAtom:
-    token: Optional[Token] = None
-
     def __eq__(self, other: object):
         return (type(self) == type(other)
             and hash(self) == hash(other))
 
     @staticmethod
-    def from_token(token: Token) -> "ParseAtom":
+    def from_text(text: str) -> "ParseAtom":
         raise NotImplementedError()
 
     def is_constant(self) -> bool:
@@ -41,10 +38,8 @@ class ParseBool(ParseAtom):
         return f"Bool({tostr})"
 
     @staticmethod
-    def from_token(token: Token) -> "ParseBool":
-        atom = ParseBool({"true": True, "false": False}[token.text])
-        atom.token = token
-        return atom
+    def from_text(text: str) -> "ParseBool":
+        return ParseBool({"true": True, "false": False}[text])
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseBool":
         return self
@@ -58,10 +53,8 @@ class ParseInteger(ParseAtom):
         return hash(self.value)
 
     @staticmethod
-    def from_token(token: Token) -> "ParseInteger":
-        atom = ParseInteger(int(token.text))
-        atom.token = token
-        return atom
+    def from_text(text: str) -> "ParseInteger":
+        return ParseInteger(int(text))
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseInteger":
         return self
@@ -69,10 +62,8 @@ class ParseInteger(ParseAtom):
 # sneaky little trick. convert hex to integer
 class ParseHex(ParseInteger):
     @staticmethod
-    def from_token(token: Token) -> ParseInteger:
-        atom = ParseInteger(int(token.text[2:], 16))
-        atom.token = token
-        return atom
+    def from_text(text: str) -> ParseInteger:
+        return ParseInteger(int(text[2:], 16))
 
 DURATION_UNITS: TOrderedDict[str, int] = OrderedDict(reversed([
     ("s", 1),
@@ -95,18 +86,16 @@ class ParseDuration(ParseInteger):
         return f"Duration({out})"
 
     @staticmethod
-    def from_token(token: Token) -> "ParseInteger":
+    def from_text(text: str) -> "ParseInteger":
         seconds = 0
-        if (match := RE_DURATION.search(token.text)) is not None:
+        if (match := RE_DURATION.search(text)) is not None:
             for group in match.groups():
                 if group is not None:
                     value_s, unit = group[:-1], group[-1]
                     scale = DURATION_UNITS[unit]
                     seconds += int(value_s) * scale
 
-        atom = ParseInteger(seconds)
-        atom.token = token
-        return atom
+        return ParseInteger(seconds)
 
 class ParseFloat(ParseAtom):
     def __init__(self, value: float):
@@ -117,10 +106,8 @@ class ParseFloat(ParseAtom):
         return hash(self.value)
 
     @staticmethod
-    def from_token(token: Token) -> "ParseFloat":
-        atom = ParseFloat(float(token.text))
-        atom.token = token
-        return atom
+    def from_text(text: str) -> "ParseFloat":
+        return ParseFloat(float(text))
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseFloat":
         return self
@@ -142,10 +129,8 @@ class ParseString(ParseAtom):
         return hash(self.value)
 
     @staticmethod
-    def from_token(token: Token) -> "ParseString":
-        atom = ParseString(token.text[0], token.text[1:-1])
-        atom.token = token
-        return atom
+    def from_text(text: str) -> "ParseString":
+        return ParseString(text[0], text[1:-1])
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseString":
         return self
@@ -179,13 +164,11 @@ class ParseRegex(ParseAtom):
         return hash(self.compiled)
 
     @staticmethod
-    def from_token(token: Token) -> "ParseRegex":
-        delim, r = token.text[0], token.text[1:]
+    def from_text(text: str) -> "ParseRegex":
+        delim, r = text[0], text[1:]
         r, flags = r.rsplit(delim, 1)
 
-        atom = ParseRegex(delim, r, set(flags), True)
-        atom.token = token
-        return atom
+        return ParseRegex(delim, r, set(flags), True)
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseRegex":
         return self
@@ -224,10 +207,8 @@ class ParseIPv4(ParseIP):
         return ip
 
     @staticmethod
-    def from_token(token: Token) -> "ParseIPv4":
-        atom = ParseIPv4(ParseIPv4.to_int(token.text))
-        atom.token = token
-        return atom
+    def from_text(text: str) -> "ParseIPv4":
+        return ParseIPv4(ParseIPv4.to_int(text))
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv4":
         return self
@@ -246,10 +227,8 @@ class ParseIPv6(ParseIP):
         return (high << 64) | low
 
     @staticmethod
-    def from_token(token: Token) -> "ParseIPv6":
-        atom = ParseIPv6(ParseIPv6.to_int(token.text))
-        atom.token = token
-        return atom
+    def from_text(text: str) -> "ParseIPv6":
+        return ParseIPv6(ParseIPv6.to_int(text))
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv6":
         return self
@@ -289,11 +268,9 @@ class ParseCIDRv4(ParseCIDR):
         return f"CIDRv4({ntop}/{self.prefix})"
 
     @staticmethod
-    def from_token(token: Token) -> "ParseCIDRv4":
-        address, cidr = token.text.split("/")
-        atom = ParseCIDRv4(ParseIPv4.to_int(address), int(cidr))
-        atom.token = token
-        return atom
+    def from_text(text: str) -> "ParseCIDRv4":
+        address, cidr = text.split("/")
+        return ParseCIDRv4(ParseIPv4.to_int(address), int(cidr))
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDRv4":
         return self
@@ -313,11 +290,9 @@ class ParseCIDRv6(ParseCIDR):
         return f"CIDRv6({ntop}/{self.prefix})"
 
     @staticmethod
-    def from_token(token: Token) -> "ParseCIDRv6":
-        address, cidr = token.text.split("/")
-        atom = ParseCIDRv6(ParseIPv6.to_int(address), int(cidr))
-        atom.token = token
-        return atom
+    def from_text(text: str) -> "ParseCIDRv6":
+        address, cidr = text.split("/")
+        return ParseCIDRv6(ParseIPv6.to_int(address), int(cidr))
 
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDRv6":
         return self
