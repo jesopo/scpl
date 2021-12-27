@@ -67,11 +67,11 @@ OPERATORS = {
     OperatorName.SUBTRACT: Operator(7, 1, 1, Associativity.LEFT),
     OperatorName.MULTIPLY: Operator(8, 1, 1, Associativity.LEFT),
     OperatorName.DIVIDE: Operator(8, 1, 1, Associativity.LEFT),
-    OperatorName.NOT: Operator(9, 0, 1, Associativity.RIGHT),
-    OperatorName.POSITIVE: Operator(9, 0, 1, Associativity.RIGHT),
-    OperatorName.NEGATIVE: Operator(9, 0, 1, Associativity.RIGHT),
-    OperatorName.COMPLEMENT: Operator(10, 0, 1, Associativity.RIGHT),
-    OperatorName.EXPONENT: Operator(11, 1, 1, Associativity.RIGHT),
+    OperatorName.EXPONENT: Operator(9, 1, 1, Associativity.RIGHT),
+    OperatorName.NOT: Operator(10, 0, 1, Associativity.RIGHT),
+    OperatorName.POSITIVE: Operator(10, 0, 1, Associativity.RIGHT),
+    OperatorName.NEGATIVE: Operator(10, 0, 1, Associativity.RIGHT),
+    OperatorName.COMPLEMENT: Operator(11, 0, 1, Associativity.RIGHT),
 }
 
 OPERATORS_BINARY = {
