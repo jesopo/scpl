@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 from .common import ParseUnaryOperator
 from ..operands import ParseAtom, ParseFloat, ParseInteger
 
@@ -20,8 +20,12 @@ class ParseUnaryNegativeFloat(ParseUnaryOperator, ParseFloat):
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
         return ParseFloat(-self._atom.eval(vars).value)
 
-def find_unary_negative(atom: ParseAtom):
-    if isinstance(atom, ParseInteger):
+def find_unary_negative(atom: ParseAtom) -> Optional[ParseAtom]:
+    if isinstance(atom, ParseUnaryNegativeInteger):
+        return atom._atom
+    elif isinstance(atom, ParseUnaryNegativeFloat):
+        return atom._atom
+    elif isinstance(atom, ParseInteger):
         return ParseUnaryNegativeInteger(atom)
     elif isinstance(atom, ParseFloat):
         return ParseUnaryNegativeFloat(atom)
