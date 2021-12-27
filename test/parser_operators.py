@@ -281,11 +281,11 @@ class ParseOperatorTestVariable(unittest.TestCase):
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableIPv6)
 
 class ParserTestBinaryOperator(unittest.TestCase):
-    def test_precedence_0(self):
+    def test_precedence_1(self):
         atoms, deps = parse(tokenise("1 && 1 || 1"), {})
         self.assertIsInstance(atoms[0], operators.bools.ParseBinaryEither)
 
-    def test_precedence_1(self):
+    def test_precedence_2(self):
         atoms, deps = parse(tokenise("true == true && true"), {})
         self.assertIsInstance(atoms[0], operators.bools.ParseBinaryBoth)
 
@@ -309,22 +309,28 @@ class ParserTestBinaryOperator(unittest.TestCase):
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryXorIntegerInteger)
 
     def test_precedence_6(self):
-        atoms, deps = parse(tokenise("1 + 1 & 2"), {})
+        atoms, deps = parse(tokenise("1 >> 1 & 2"), {})
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryAndIntegerInteger)
 
     def test_precedence_7(self):
+        atoms, deps = parse(tokenise("1 + 1 << 2"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryLeftIntegerInteger)
+        atoms, deps = parse(tokenise("1 + 1 >> 2"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryRightIntegerInteger)
+
+    def test_precedence_8(self):
         atoms, deps = parse(tokenise("1 / 1 + 2"), {})
         self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddFloatInteger)
         atoms, deps = parse(tokenise("1 / 1 - 2"), {})
         self.assertIsInstance(atoms[0], operators.subtract.ParseBinarySubtractFloatInteger)
 
-    def test_precedence_8(self):
+    def test_precedence_9(self):
         atoms, deps = parse(tokenise("1 ** 1 * 2"), {})
         self.assertIsInstance(atoms[0], operators.multiply.ParseBinaryMultiplyIntegerInteger)
         atoms, deps = parse(tokenise("1 ** 1 / 2"), {})
         self.assertIsInstance(atoms[0], operators.divide.ParseBinaryDivideIntegerInteger)
 
-    def test_precedence_9(self):
+    def test_precedence_10(self):
         with self.assertRaises(ParserError):
             parse(tokenise("1 ** !1"), {})
 
