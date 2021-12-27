@@ -8,10 +8,12 @@ from ..operands import (ParseAtom, ParseFloat, ParseInteger, ParseIPv4, ParseIPv
 class ParseSet(ParseAtom):
     def __init__(self, atoms: Sequence[ParseCastHash]):
         self._atoms = atoms
+        self._precompile: Set[int] = set()
     def __repr__(self) -> str:
         return f"Set({', '.join(repr(a.atom) for a in self._atoms)})"
     def eval(self, vars: Dict[str, ParseAtom]) -> Set[int]:
-        return set(a.eval(vars).value for a in self._atoms)
+        nonconst = set(a.eval(vars).value for a in self._atoms)
+        return self._precompile | nonconst
 
 class ParseSetInteger(ParseSet):
     def __init__(self, atoms: Sequence[ParseInteger]):
