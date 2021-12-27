@@ -1,9 +1,11 @@
 from typing import Dict, Optional
 from .common import ParseBinaryOperator
 from ..operands import (ParseAtom, ParseBool, ParseCIDR, ParseCIDRv4, ParseCIDRv6,
-    ParseIP, ParseIPv4, ParseIPv6, ParseString)
-from .set import ParseSet
-from .cast import find_cast_hash, ParseCastHash
+    ParseFloat, ParseInteger, ParseIP, ParseIPv4, ParseIPv6, ParseString)
+from .set import (ParseSet, ParseSetInteger, ParseSetIPv4, ParseSetIPv6, ParseSetFloat,
+    ParseSetString)
+from .cast import (ParseCastHash, ParseCastHashFloat, ParseCastHashInteger,
+    ParseCastHashIPv4, ParseCastHashIPv6, ParseCastHashString)
 
 class ParseBinaryContainsStringString(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseString, right: ParseString):
@@ -36,13 +38,34 @@ class ParseBinaryContainsHashSet(ParseBinaryOperator, ParseBool):
         right = self._right.eval(vars)
         return ParseBool(self._left.eval(vars).value in right)
 
+class ParseBinaryContainsIntegerSet(ParseBinaryContainsHashSet):
+    def __init__(self, left: ParseInteger, right: ParseSetInteger):
+        super().__init__(ParseCastHashInteger(left), right)
+class ParseBinaryContainsFloatSet(ParseBinaryContainsHashSet):
+    def __init__(self, left: ParseFloat, right: ParseSetFloat):
+        super().__init__(ParseCastHashFloat(left), right)
+class ParseBinaryContainsStringSet(ParseBinaryContainsHashSet):
+    def __init__(self, left: ParseString, right: ParseSetString):
+        super().__init__(ParseCastHashString(left), right)
+class ParseBinaryContainsIPv4Set(ParseBinaryContainsHashSet):
+    def __init__(self, left: ParseIPv4, right: ParseSetIPv4):
+        super().__init__(ParseCastHashIPv4(left), right)
+class ParseBinaryContainsIPv6Set(ParseBinaryContainsHashSet):
+    def __init__(self, left: ParseIPv6, right: ParseSetIPv6):
+        super().__init__(ParseCastHashIPv6(left), right)
+
 def find_binary_contains(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
     # check `right` first because if it is a set then we don't care what `left` is
-    if isinstance(right, ParseSet):
-        if (cast := find_cast_hash(left)) is not None:
-            return ParseBinaryContainsHashSet(cast, right)
-        else:
-            return None
+    if isinstance(left, ParseInteger) and isinstance(right, ParseSetInteger):
+        return ParseBinaryContainsIntegerSet(left, right)
+    elif isinstance(left, ParseFloat) and isinstance(right, ParseSetFloat):
+        return ParseBinaryContainsFloatSet(left, right)
+    elif isinstance(left, ParseString) and isinstance(right, ParseSetString):
+        return ParseBinaryContainsStringSet(left, right)
+    elif isinstance(left, ParseIPv4) and isinstance(right, ParseSetIPv4):
+        return ParseBinaryContainsIPv4Set(left, right)
+    elif isinstance(left, ParseIPv6) and isinstance(right, ParseSetIPv6):
+        return ParseBinaryContainsIPv6Set(left, right)
     elif isinstance(left, ParseString) and isinstance(right, ParseString):
         return ParseBinaryContainsStringString(left, right)
     elif isinstance(left, ParseIPv4) and isinstance(right, ParseCIDRv4):

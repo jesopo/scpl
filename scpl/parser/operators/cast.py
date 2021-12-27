@@ -1,8 +1,8 @@
 from re import escape as re_escape
 from typing import Dict, Optional
 from .common import ParseUnaryOperator
-from ..operands import (ParseAtom, ParseBool, ParseFloat, ParseInteger, ParseRegex,
-    ParseString)
+from ..operands import (ParseAtom, ParseBool, ParseFloat, ParseInteger, ParseIPv4,
+    ParseIPv6, ParseRegex, ParseString)
 
 class ParseCastIntegerFloat(ParseUnaryOperator, ParseFloat):
     def __init__(self, atom: ParseInteger):
@@ -69,6 +69,12 @@ class ParseCastHashInteger(ParseCastHash, ParseInteger):
         self._atom = atom
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
         return ParseInteger(hash(self._atom.eval(vars)))
+class ParseCastHashFloat(ParseCastHash, ParseInteger):
+    def __init__(self, atom: ParseFloat):
+        super().__init__(atom)
+        self._atom = atom
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
+        return ParseInteger(hash(self._atom.eval(vars)))
 class ParseCastHashString(ParseCastHash, ParseInteger):
     def __init__(self, atom: ParseString):
         super().__init__(atom)
@@ -77,6 +83,18 @@ class ParseCastHashString(ParseCastHash, ParseInteger):
         return ParseInteger(hash(self._atom.eval(vars)))
 class ParseCastHashRegex(ParseCastHash, ParseInteger):
     def __init__(self, atom: ParseRegex):
+        super().__init__(atom)
+        self._atom = atom
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
+        return ParseInteger(hash(self._atom.eval(vars)))
+class ParseCastHashIPv4(ParseCastHash, ParseInteger):
+    def __init__(self, atom: ParseIPv4):
+        super().__init__(atom)
+        self._atom = atom
+    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
+        return ParseInteger(hash(self._atom.eval(vars)))
+class ParseCastHashIPv6(ParseCastHash, ParseInteger):
+    def __init__(self, atom: ParseIPv6):
         super().__init__(atom)
         self._atom = atom
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
