@@ -207,10 +207,18 @@ class ParseOperatorTestNegative(unittest.TestCase):
     def test_integer(self):
         atoms, deps = parse(tokenise("-1"), {})
         self.assertIsInstance(atoms[0], operators.negative.ParseUnaryNegativeInteger)
+    def test_integer_double(self):
+        # flatten a double negative integer to an integer
+        atoms, deps = parse(tokenise("--1"), {})
+        self.assertIsInstance(atoms[0], ParseInteger)
 
     def test_float(self):
         atoms, deps = parse(tokenise("-1.0"), {})
         self.assertIsInstance(atoms[0], operators.negative.ParseUnaryNegativeFloat)
+    def test_float_double(self):
+        # flatten a double negative float to a float
+        atoms, deps = parse(tokenise("--1.0"), {})
+        self.assertIsInstance(atoms[0], ParseFloat)
 
 class ParseOperatorTestBoth(unittest.TestCase):
     def test_bool_bool(self):
