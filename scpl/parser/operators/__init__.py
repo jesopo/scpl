@@ -17,7 +17,8 @@ from .bools import find_binary_both, find_binary_either, find_unary_not
 from .match import find_binary_match
 from .contains import find_binary_contains
 from .equal import find_binary_equal
-from .bitwise import find_binary_and, find_binary_or, find_binary_xor
+from .bitwise import (find_binary_and, find_binary_or, find_binary_xor,
+    find_binary_left, find_binary_right)
 
 # unary
 from .negative import find_unary_negative
@@ -68,6 +69,10 @@ def find_binary_operator(
         return find_binary_or(left, right)
     elif op_name == OperatorName.XOR:
         return find_binary_xor(left, right)
+    elif op_name == OperatorName.LEFT:
+        return find_binary_left(left, right)
+    elif op_name == OperatorName.RIGHT:
+        return find_binary_right(left, right)
     else:
         return None
 
