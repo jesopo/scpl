@@ -64,6 +64,21 @@ class ParseOperatorTestDivide(unittest.TestCase):
         atoms, deps = parse(tokenise("1.0 / 1"), {})
         self.assertIsInstance(atoms[0], operators.divide.ParseBinaryDivideFloatInteger)
 
+class ParseOperatorTestModulo(unittest.TestCase):
+    def test_integer_integer(self):
+        atoms, deps = parse(tokenise("1 % 1"), {})
+        self.assertIsInstance(atoms[0], operators.modulo.ParseBinaryModuloIntegerInteger)
+    def test_integer_float(self):
+        atoms, deps = parse(tokenise("1 % 1.0"), {})
+        self.assertIsInstance(atoms[0], operators.modulo.ParseBinaryModuloIntegerFloat)
+
+    def test_float_float(self):
+        atoms, deps = parse(tokenise("1.0 % 1.0"), {})
+        self.assertIsInstance(atoms[0], operators.modulo.ParseBinaryModuloFloatFloat)
+    def test_float_integer(self):
+        atoms, deps = parse(tokenise("1.0 % 1"), {})
+        self.assertIsInstance(atoms[0], operators.modulo.ParseBinaryModuloFloatInteger)
+
 class ParseOperatorTestMultiply(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 * 1"), {})
@@ -329,6 +344,8 @@ class ParserTestBinaryOperator(unittest.TestCase):
         self.assertIsInstance(atoms[0], operators.multiply.ParseBinaryMultiplyIntegerInteger)
         atoms, deps = parse(tokenise("1 ** 1 / 2"), {})
         self.assertIsInstance(atoms[0], operators.divide.ParseBinaryDivideIntegerInteger)
+        atoms, deps = parse(tokenise("1 ** 1 % 2"), {})
+        self.assertIsInstance(atoms[0], operators.modulo.ParseBinaryModuloIntegerInteger)
 
     def test_precedence_10(self):
         with self.assertRaises(ParserError):
