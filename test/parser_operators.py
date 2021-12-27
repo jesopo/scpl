@@ -83,6 +83,9 @@ class ParseOperatorTestExponent(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 ** 1"), {})
         self.assertIsInstance(atoms[0], operators.exponent.ParseBinaryExponentIntegerInteger)
+    def test_integer_negative(self):
+        atoms, deps = parse(tokenise("1 ** -1"), {})
+        self.assertIsInstance(atoms[0], operators.exponent.ParseBinaryExponentIntegerNegative)
     def test_integer_float(self):
         atoms, deps = parse(tokenise("1 ** 1.0"), {})
         self.assertIsInstance(atoms[0], operators.exponent.ParseBinaryExponentIntegerFloat)
