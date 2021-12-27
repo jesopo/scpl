@@ -130,5 +130,7 @@ class ParserTestSet(unittest.TestCase):
         self.assertIsInstance(atoms[0], operators.set.ParseSetIPv6)
 
     def test_invalid_mixed(self):
-        with self.assertRaises(ParserTypeError):
-            parse(tokenise("{1, 1.0}"), {})
+        tokens = tokenise("{1, 1.0}")
+        with self.assertRaises(ParserTypeError) as cm:
+            parse(tokens.copy(), {})
+        self.assertEqual(tokens[4], cm.exception.token)
