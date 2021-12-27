@@ -10,6 +10,7 @@ from .add import find_binary_add
 from .subtract import find_binary_subtract
 from .multiply import find_binary_multiply
 from .divide import find_binary_divide
+from .modulo import find_binary_modulo
 from .exponent import find_binary_exponent
 from .lesser import find_binary_lesser
 from .greater import find_binary_greater
@@ -41,6 +42,8 @@ def find_binary_operator(
         return find_binary_multiply(left, right)
     elif op_name == OperatorName.DIVIDE:
         return find_binary_divide(left, right)
+    elif op_name == OperatorName.MODULO:
+        return find_binary_modulo(left, right)
     elif op_name == OperatorName.EXPONENT:
         return find_binary_exponent(left, right)
     elif op_name == OperatorName.BOTH:

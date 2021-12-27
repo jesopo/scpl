@@ -35,6 +35,7 @@ class OperatorName(Enum):
     SUBTRACT = auto()
     MULTIPLY = auto()
     DIVIDE = auto()
+    MODULO = auto()
     EXPONENT = auto()
     # binary bitwise
     AND = auto()
@@ -71,6 +72,7 @@ OPERATORS = {
     OperatorName.SUBTRACT: Operator(8, 1, 1, Associativity.LEFT),
     OperatorName.MULTIPLY: Operator(9, 1, 1, Associativity.LEFT),
     OperatorName.DIVIDE: Operator(9, 1, 1, Associativity.LEFT),
+    OperatorName.MODULO: Operator(9, 1, 1, Associativity.LEFT),
     OperatorName.EXPONENT: Operator(10, 1, 1, Associativity.RIGHT),
     OperatorName.NOT: Operator(11, 0, 1, Associativity.RIGHT),
     OperatorName.POSITIVE: Operator(11, 0, 1, Associativity.RIGHT),
@@ -97,6 +99,7 @@ OPERATORS_BINARY = {
     "-":  OperatorName.SUBTRACT,
     "/":  OperatorName.DIVIDE,
     "*":  OperatorName.MULTIPLY,
+    "%":  OperatorName.MODULO,
     "**": OperatorName.EXPONENT,
 }
 
