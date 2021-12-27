@@ -111,19 +111,29 @@ class ParseOperatorTestComplement(unittest.TestCase):
         self.assertIsInstance(atoms[0], ParseRegex)
 
 class ParseOperatorTestAnd(unittest.TestCase):
-    def test_and_integer_integer(self):
+    def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 & 1"), {})
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryAndIntegerInteger)
 
 class ParseOperatorTestXor(unittest.TestCase):
-    def test_and_integer_integer(self):
+    def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 ^ 1"), {})
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryXorIntegerInteger)
 
 class ParseOperatorTestOr(unittest.TestCase):
-    def test_and_integer_integer(self):
+    def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 | 1"), {})
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryOrIntegerInteger)
+
+class ParseOperatorTestLeft(unittest.TestCase):
+    def test_integer_integer(self):
+        atoms, deps = parse(tokenise("1 << 1"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryLeftIntegerInteger)
+
+class ParseOperatorRightLeft(unittest.TestCase):
+    def test_integer_integer(self):
+        atoms, deps = parse(tokenise("1 >> 1"), {})
+        self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryRightIntegerInteger)
 
 class ParseOperatorTestGreater(unittest.TestCase):
     def test_integer_integer(self):
