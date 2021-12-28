@@ -14,7 +14,7 @@ class ParserTestString(unittest.TestCase):
         self.assertEqual(atoms[0].value, "asd")
         self.assertEqual(atoms[0].delimiter, '"')
 
-class ParseTestRegex(unittest.TestCase):
+class ParserTestRegex(unittest.TestCase):
     def test_simple(self):
         atoms, deps = parse(tokenise("/a/"), {})
         self.assertIsInstance(atoms[0], ParseRegex)

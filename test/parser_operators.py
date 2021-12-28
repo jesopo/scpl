@@ -5,7 +5,7 @@ from scpl.parser import operators, parse, ParserError
 from scpl.parser import (ParseInteger, ParseIPv4, ParseIPv6, ParseBool, ParseFloat,
     ParseRegex, ParseString)
 
-class ParseOperatorTestAdd(unittest.TestCase):
+class ParserOperatorTestAdd(unittest.TestCase):
     def test_string_string(self):
         atoms, deps = parse(tokenise('"a" + "a"'), {})
         self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddStringString)
@@ -34,7 +34,7 @@ class ParseOperatorTestAdd(unittest.TestCase):
         atoms, deps = parse(tokenise("1.0 + 1"), {})
         self.assertIsInstance(atoms[0], operators.add.ParseBinaryAddFloatInteger)
 
-class ParseOperatorTestSubtract(unittest.TestCase):
+class ParserOperatorTestSubtract(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 - 1"), {})
         self.assertIsInstance(atoms[0], operators.subtract.ParseBinarySubtractIntegerInteger)
@@ -49,7 +49,7 @@ class ParseOperatorTestSubtract(unittest.TestCase):
         atoms, deps = parse(tokenise("1.0 - 1"), {})
         self.assertIsInstance(atoms[0], operators.subtract.ParseBinarySubtractFloatInteger)
 
-class ParseOperatorTestDivide(unittest.TestCase):
+class ParserOperatorTestDivide(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 / 1"), {})
         self.assertIsInstance(atoms[0], operators.divide.ParseBinaryDivideIntegerInteger)
@@ -64,7 +64,7 @@ class ParseOperatorTestDivide(unittest.TestCase):
         atoms, deps = parse(tokenise("1.0 / 1"), {})
         self.assertIsInstance(atoms[0], operators.divide.ParseBinaryDivideFloatInteger)
 
-class ParseOperatorTestModulo(unittest.TestCase):
+class ParserOperatorTestModulo(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 % 1"), {})
         self.assertIsInstance(atoms[0], operators.modulo.ParseBinaryModuloIntegerInteger)
@@ -79,7 +79,7 @@ class ParseOperatorTestModulo(unittest.TestCase):
         atoms, deps = parse(tokenise("1.0 % 1"), {})
         self.assertIsInstance(atoms[0], operators.modulo.ParseBinaryModuloFloatInteger)
 
-class ParseOperatorTestMultiply(unittest.TestCase):
+class ParserOperatorTestMultiply(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 * 1"), {})
         self.assertIsInstance(atoms[0], operators.multiply.ParseBinaryMultiplyIntegerInteger)
@@ -94,7 +94,7 @@ class ParseOperatorTestMultiply(unittest.TestCase):
         atoms, deps = parse(tokenise("1.0 * 1"), {})
         self.assertIsInstance(atoms[0], operators.multiply.ParseBinaryMultiplyFloatInteger)
 
-class ParseOperatorTestExponent(unittest.TestCase):
+class ParserOperatorTestExponent(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 ** 1"), {})
         self.assertIsInstance(atoms[0], operators.exponent.ParseBinaryExponentIntegerInteger)
@@ -112,7 +112,7 @@ class ParseOperatorTestExponent(unittest.TestCase):
         atoms, deps = parse(tokenise("1.0 ** 1"), {})
         self.assertIsInstance(atoms[0], operators.exponent.ParseBinaryExponentFloatInteger)
 
-class ParseOperatorTestComplement(unittest.TestCase):
+class ParserOperatorTestComplement(unittest.TestCase):
     def test_integer(self):
         atoms, deps = parse(tokenise("~1"), {})
         self.assertIsInstance(atoms[0], operators.complement.ParseUnaryComplementInteger)
@@ -125,32 +125,32 @@ class ParseOperatorTestComplement(unittest.TestCase):
         atoms, deps = parse(tokenise("~~/a/"), {})
         self.assertIsInstance(atoms[0], ParseRegex)
 
-class ParseOperatorTestAnd(unittest.TestCase):
+class ParserOperatorTestAnd(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 & 1"), {})
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryAndIntegerInteger)
 
-class ParseOperatorTestXor(unittest.TestCase):
+class ParserOperatorTestXor(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 ^ 1"), {})
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryXorIntegerInteger)
 
-class ParseOperatorTestOr(unittest.TestCase):
+class ParserOperatorTestOr(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 | 1"), {})
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryOrIntegerInteger)
 
-class ParseOperatorTestLeft(unittest.TestCase):
+class ParserOperatorTestLeft(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 << 1"), {})
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryLeftIntegerInteger)
 
-class ParseOperatorRightLeft(unittest.TestCase):
+class ParserOperatorRightLeft(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 >> 1"), {})
         self.assertIsInstance(atoms[0], operators.bitwise.ParseBinaryRightIntegerInteger)
 
-class ParseOperatorTestGreater(unittest.TestCase):
+class ParserOperatorTestGreater(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 > 1"), {})
         self.assertIsInstance(atoms[0], operators.greater.ParseBinaryGreaterIntegerInteger)
@@ -165,7 +165,7 @@ class ParseOperatorTestGreater(unittest.TestCase):
         atoms, deps = parse(tokenise("1.0 > 1"), {})
         self.assertIsInstance(atoms[0], operators.greater.ParseBinaryGreaterFloatInteger)
 
-class ParseOperatorTestLesser(unittest.TestCase):
+class ParserOperatorTestLesser(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 < 1"), {})
         self.assertIsInstance(atoms[0], operators.lesser.ParseBinaryLesserIntegerInteger)
@@ -180,7 +180,7 @@ class ParseOperatorTestLesser(unittest.TestCase):
         atoms, deps = parse(tokenise("1.0 < 1"), {})
         self.assertIsInstance(atoms[0], operators.lesser.ParseBinaryLesserFloatInteger)
 
-class ParseOperatorTestContains(unittest.TestCase):
+class ParserOperatorTestContains(unittest.TestCase):
     def test_string_string(self):
         atoms, deps = parse(tokenise('"a" in "asd"'), {})
         self.assertIsInstance(atoms[0], operators.contains.ParseBinaryContainsStringString)
@@ -193,12 +193,12 @@ class ParseOperatorTestContains(unittest.TestCase):
         atoms, deps = parse(tokenise("fd84:9d71:8b8:1::1 in fd84:9d71:8b8::/48"), {})
         self.assertIsInstance(atoms[0], operators.contains.ParseBinaryContainsIPCIDR)
 
-class ParseOperatorTestMatch(unittest.TestCase):
+class ParserOperatorTestMatch(unittest.TestCase):
     def test_string_regex(self):
         atoms, deps = parse(tokenise('"asd" =~ /^a/'), {})
         self.assertIsInstance(atoms[0], operators.match.ParseBinaryMatchStringRegex)
 
-class ParseOperatorTestNot(unittest.TestCase):
+class ParserOperatorTestNot(unittest.TestCase):
     def test_string(self):
         atoms, deps = parse(tokenise('!"asd"'), {})
         self.assertIsInstance(atoms[0], operators.bools.ParseUnaryNot)
@@ -219,7 +219,7 @@ class ParseOperatorTestNot(unittest.TestCase):
         atoms, deps = parse(tokenise("!true"), {})
         self.assertIsInstance(atoms[0], operators.bools.ParseUnaryNot)
 
-class ParseOperatorTestPositive(unittest.TestCase):
+class ParserOperatorTestPositive(unittest.TestCase):
     def test_integer(self):
         atoms, deps = parse(tokenise("+1"), {})
         self.assertIsInstance(atoms[0], operators.positive.ParseUnaryPositiveInteger)
@@ -228,7 +228,7 @@ class ParseOperatorTestPositive(unittest.TestCase):
         atoms, deps = parse(tokenise("+1.0"), {})
         self.assertIsInstance(atoms[0], operators.positive.ParseUnaryPositiveFloat)
 
-class ParseOperatorTestNegative(unittest.TestCase):
+class ParserOperatorTestNegative(unittest.TestCase):
     def test_integer(self):
         atoms, deps = parse(tokenise("-1"), {})
         self.assertIsInstance(atoms[0], operators.negative.ParseUnaryNegativeInteger)
@@ -245,7 +245,7 @@ class ParseOperatorTestNegative(unittest.TestCase):
         atoms, deps = parse(tokenise("--1.0"), {})
         self.assertIsInstance(atoms[0], ParseFloat)
 
-class ParseOperatorTestBoth(unittest.TestCase):
+class ParserOperatorTestBoth(unittest.TestCase):
     def test_bool_bool(self):
         atoms, deps = parse(tokenise("true && true"), {})
         self.assertIsInstance(atoms[0], operators.bools.ParseBinaryBoth)
@@ -266,7 +266,7 @@ class ParseOperatorTestBoth(unittest.TestCase):
         atoms, deps = parse(tokenise("/a/ && /a/"), {})
         self.assertIsInstance(atoms[0], operators.bools.ParseBinaryBoth)
 
-class ParseOperatorTestVariable(unittest.TestCase):
+class ParserOperatorTestVariable(unittest.TestCase):
     def test_integer(self):
         atoms, deps = parse(tokenise("a"), {"a": ParseInteger})
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableInteger)
@@ -295,7 +295,7 @@ class ParseOperatorTestVariable(unittest.TestCase):
         atoms, deps = parse(tokenise("a"), {"a": ParseIPv6})
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableIPv6)
 
-class ParserTestBinaryOperator(unittest.TestCase):
+class ParserOperatorTestPrecedence(unittest.TestCase):
     def test_precedence_1(self):
         atoms, deps = parse(tokenise("1 && 1 || 1"), {})
         self.assertIsInstance(atoms[0], operators.bools.ParseBinaryEither)
