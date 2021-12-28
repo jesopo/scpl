@@ -173,19 +173,6 @@ class ParseRegex(ParseAtom):
     def eval(self, variables: Dict[str, ParseAtom]) -> "ParseRegex":
         return self
 
-class ParseRegexset(ParseAtom):
-    def __init__(self, regexes: Set[ParseRegex]) :
-        self.regexes = regexes
-    def __repr__(self) -> str:
-        outs: List[str] = []
-        for regex in self.regexes:
-            outs.append(str(regex))
-        outs.sort()
-        return f"Regexset({', '.join(outs)!r})"
-
-    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseRegexset":
-        return self
-
 class ParseIP(ParseAtom):
     def __init__(self, ip: int):
         self.integer = ip

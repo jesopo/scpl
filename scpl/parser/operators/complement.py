@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 from .common import ParseUnaryOperator
-from ..operands import ParseAtom, ParseInteger, ParseRegex, ParseRegexset
+from ..operands import ParseAtom, ParseInteger, ParseRegex
 
 class ParseUnaryComplementInteger(ParseUnaryOperator, ParseInteger):
     def __init__(self, atom: ParseInteger):

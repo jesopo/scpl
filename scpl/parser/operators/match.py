@@ -1,7 +1,8 @@
 from typing import Dict
+from .casemapped import ParseUnaryCasemappedRegex, ParseUnaryCasemappedString
 from .common import ParseBinaryOperator
 from .complement import ParseUnaryComplementRegex
-from ..operands import ParseAtom, ParseBool, ParseRegex, ParseRegexset, ParseString
+from ..operands import ParseAtom, ParseBool, ParseRegex, ParseString
 
 class ParseBinaryMatchStringUnregex(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseString, right: ParseRegex):
@@ -32,30 +33,19 @@ class ParseBinaryMatchStringRegex(ParseBinaryOperator, ParseString):
         else:
             return ParseString(None, "")
 
-class ParseBinaryMatchStringRegexset(ParseBinaryOperator, ParseBool):
-    def __init__(self, left: ParseString, right: ParseRegexset):
-        super().__init__(left, right)
-        self._left = left
-        self._right = right
-    def __repr__(self) -> str:
-        return f"Match({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        reference = self._left.eval(vars).value
-        regexes = self._right.eval(vars).regexes
-        for regex in regexes:
-            match = bool(regex.compiled.search(reference))
-            if not match == regex.expected:
-                return ParseBool(False)
-        return ParseBool(True)
-
 def find_binary_match(left: ParseAtom, right: ParseAtom):
-    if isinstance(left, ParseString):
-        if isinstance(right, ParseUnaryComplementRegex):
+    if isinstance(right, ParseUnaryComplementRegex):
+        if isinstance(left, ParseUnaryCasemappedString):
+            c_right = ParseUnaryCasemappedRegex(right, left.table)
+            return ParseBinaryMatchStringUnregex(left, c_right)
+        elif isinstance(left, ParseString):
             return ParseBinaryMatchStringUnregex(left, right)
-        elif isinstance(right, ParseRegex):
+    elif isinstance(right, ParseRegex):
+        if isinstance(left, ParseUnaryCasemappedString):
+            c_right = ParseUnaryCasemappedRegex(right, left.table)
+            return ParseBinaryMatchStringRegex(left, c_right)
+        elif isinstance(left, ParseString):
             return ParseBinaryMatchStringRegex(left, right)
-        elif isinstance(right, ParseRegexset):
-            return ParseBinaryMatchStringRegexset(left, right)
         else:
             return None
     else:
