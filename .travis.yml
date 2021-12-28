@@ -6,7 +6,7 @@ python:
   - "nightly"
 install:
   - pip3 install mypy
-  - git clone -b maketrans-str-str https://github.com/jesopo/typeshed.git jesopo-typeshed
+  - git clone -b maketrans-strstr https://github.com/jesopo/typeshed.git jesopo-typeshed
 script:
   - pip3 freeze
   - mypy scpl --custom-typeshed jesopo-typeshed
