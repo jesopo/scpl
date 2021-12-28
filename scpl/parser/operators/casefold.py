@@ -6,7 +6,7 @@ class ParseUnaryCasefoldString(ParseUnaryOperator, ParseString):
     def __init__(self, atom: ParseString, table: Optional[Dict[str, str]]):
         super().__init__(atom)
         self._atom = atom
-        self._table: Optional[Dict[int, int]] = None
+        self._table: Optional[Dict[int, str]] = None
         if table is not None:
             self._table = str.maketrans(table)
     def __repr__(self) -> str:
