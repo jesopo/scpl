@@ -22,14 +22,13 @@ class ParseAtom:
         return (type(self) == type(other)
             and hash(self) == hash(other))
 
-    @staticmethod
-    def from_text(text: str) -> "ParseAtom":
-        raise NotImplementedError()
-
     def is_constant(self) -> bool:
         return True
 
 class ParseBool(ParseAtom):
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        raise NotImplementedError()
+class ParseConstBool(ParseBool):
     def __init__(self, value: bool):
         self.value = value
     def __repr__(self) -> str:
@@ -38,12 +37,15 @@ class ParseBool(ParseAtom):
 
     @staticmethod
     def from_text(text: str) -> "ParseBool":
-        return ParseBool({"true": True, "false": False}[text])
+        return ParseConstBool({"true": True, "false": False}[text])
 
     def eval(self, vars: Dict[str, ParseAtom]) -> bool:
         return self.value
 
 class ParseInteger(ParseAtom):
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        raise NotImplementedError()
+class ParseConstInteger(ParseInteger):
     def __init__(self, value: int):
         self.value = value
     def __repr__(self) -> str:
@@ -53,7 +55,7 @@ class ParseInteger(ParseAtom):
 
     @staticmethod
     def from_text(text: str) -> "ParseInteger":
-        return ParseInteger(int(text))
+        return ParseConstInteger(int(text))
 
     def eval(self, vars: Dict[str, ParseAtom]) -> int:
         return self.value
@@ -62,7 +64,7 @@ class ParseInteger(ParseAtom):
 class ParseHex(ParseInteger):
     @staticmethod
     def from_text(text: str) -> ParseInteger:
-        return ParseInteger(int(text[2:], 16))
+        return ParseConstInteger(int(text[2:], 16))
 
 DURATION_UNITS: TOrderedDict[str, int] = OrderedDict(reversed([
     ("s", 1),
@@ -74,16 +76,6 @@ DURATION_UNITS: TOrderedDict[str, int] = OrderedDict(reversed([
 RE_DURATION = re.compile("^(\d+w)?(\d+d)?(\d+h)?(\d+m)?(\d+s)?$")
 
 class ParseDuration(ParseInteger):
-    def __repr__(self) -> str:
-        seconds = self.value
-        out = ""
-        for unit, scale in DURATION_UNITS.items():
-            unit_value, seconds = divmod(seconds, scale)
-            if unit_value > 0:
-                out += f"{unit_value}{unit}"
-
-        return f"Duration({out})"
-
     @staticmethod
     def from_text(text: str) -> "ParseInteger":
         seconds = 0
@@ -94,9 +86,12 @@ class ParseDuration(ParseInteger):
                     scale = DURATION_UNITS[unit]
                     seconds += int(value_s) * scale
 
-        return ParseInteger(seconds)
+        return ParseConstInteger(seconds)
 
 class ParseFloat(ParseAtom):
+    def eval(self, vars: Dict[str, ParseAtom]) -> float:
+        raise NotImplementedError()
+class ParseConstFloat(ParseFloat):
     def __init__(self, value: float):
         self.value = value
     def __repr__(self) -> str:
@@ -106,12 +101,15 @@ class ParseFloat(ParseAtom):
 
     @staticmethod
     def from_text(text: str) -> "ParseFloat":
-        return ParseFloat(float(text))
+        return ParseConstFloat(float(text))
 
     def eval(self, vars: Dict[str, ParseAtom]) -> float:
         return self.value
 
 class ParseString(ParseAtom):
+    def eval(self, vars: Dict[str, ParseAtom]) -> str:
+        raise NotImplementedError()
+class ParseConstString(ParseString):
     def __init__(self, delim: Optional[str], value: str):
         self.delimiter = delim
         self.value = value
@@ -126,12 +124,15 @@ class ParseString(ParseAtom):
 
     @staticmethod
     def from_text(text: str) -> "ParseString":
-        return ParseString(text[0], text[1:-1])
+        return ParseConstString(text[0], text[1:-1])
 
     def eval(self, vars: Dict[str, ParseAtom]) -> str:
         return self.value
 
 class ParseRegex(ParseAtom):
+    def eval(self, vars: Dict[str, ParseAtom]) -> Pattern:
+        raise NotImplementedError()
+class ParseConstRegex(ParseRegex):
     def __init__(self,
             delimiter: Optional[str],
             pattern: str,
@@ -159,7 +160,7 @@ class ParseRegex(ParseAtom):
         delim, r = text[0], text[1:]
         r, flags = r.rsplit(delim, 1)
 
-        return ParseRegex(delim, r, set(flags))
+        return ParseConstRegex(delim, r, set(flags))
 
     def eval(self, vars: Dict[str, ParseAtom]) -> Pattern:
         flags = 0
@@ -278,7 +279,7 @@ class ParseCIDRv6(ParseCIDR):
     def eval(self, vars: Dict[str, ParseAtom]) -> "ParseCIDRv6":
         return self
 
-KEYWORDS: Dict[str, Type[ParseAtom]] = {
-    "true":  ParseBool,
-    "false": ParseBool
+KEYWORDS: Dict[str, ParseAtom] = {
+    "true":  ParseConstBool(True),
+    "false": ParseConstBool(False)
 }

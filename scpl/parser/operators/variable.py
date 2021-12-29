@@ -15,19 +15,19 @@ class ParseVariable(ParseAtom):
 
 class ParseVariableString(ParseVariable, ParseString):
     def eval(self, vars: Dict[str, ParseAtom]) -> str:
-        return cast(ParseString, vars[self.name]).value
+        return cast(ParseString, vars[self.name]).eval(vars)
 class ParseVariableInteger(ParseVariable, ParseInteger):
     def eval(self, vars: Dict[str, ParseAtom]) -> int:
-        return cast(ParseInteger, vars[self.name]).value
+        return cast(ParseInteger, vars[self.name]).eval(vars)
 class ParseVariableFloat(ParseVariable, ParseFloat):
     def eval(self, vars: Dict[str, ParseAtom]) -> float:
-        return cast(ParseFloat, vars[self.name]).value
+        return cast(ParseFloat, vars[self.name]).eval(vars)
 class ParseVariableRegex(ParseVariable, ParseRegex):
     def eval(self, vars: Dict[str, ParseAtom]) -> Pattern:
         return cast(ParseRegex, vars[self.name]).eval(vars)
 class ParseVariableBool(ParseVariable, ParseBool):
     def eval(self, vars: Dict[str, ParseAtom]) -> bool:
-        return cast(ParseBool, vars[self.name]).value
+        return cast(ParseBool, vars[self.name]).eval(vars)
 class ParseVariableIPv4(ParseVariable, ParseIPv4):
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseIPv4:
         return cast(ParseIPv4, vars[self.name])

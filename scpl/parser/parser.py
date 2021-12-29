@@ -142,8 +142,8 @@ def parse(
 
             if isinstance(token, TokenWord):
                 if token.text in KEYWORDS:
-                    keyword_type = KEYWORDS[token.text]
-                    operands.append((keyword_type.from_text(token.text), token))
+                    keyword_atom = KEYWORDS[token.text]
+                    operands.append((keyword_atom, token))
                 elif (var_type := types.get(token.text)) is None:
                     raise ParserError(token, f"unknown variable {token.text}")
                 elif (var := find_variable(token.text, var_type)) is None:
@@ -155,17 +155,17 @@ def parse(
 
             elif isinstance(token, TokenNumber):
                 if "." in token.text:
-                    operands.append((ParseFloat.from_text(token.text), token))
+                    operands.append((ParseConstFloat.from_text(token.text), token))
                 else:
-                    operands.append((ParseInteger.from_text(token.text), token))
+                    operands.append((ParseConstInteger.from_text(token.text), token))
             elif isinstance(token, TokenHex):
                 operands.append((ParseHex.from_text(token.text), token))
             elif isinstance(token, TokenDuration):
                 operands.append((ParseDuration.from_text(token.text), token))
             elif isinstance(token, TokenString):
-                operands.append((ParseString.from_text(token.text), token))
+                operands.append((ParseConstString.from_text(token.text), token))
             elif isinstance(token, TokenRegex):
-                operands.append((ParseRegex.from_text(token.text), token))
+                operands.append((ParseConstRegex.from_text(token.text), token))
             elif isinstance(token, TokenIPv4):
                 if "/" in token.text:
                     operands.append((ParseCIDRv4.from_text(token.text), token))
