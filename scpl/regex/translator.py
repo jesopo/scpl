@@ -13,9 +13,9 @@ def translate(tokens: Sequence[RegexToken], table: Dict[int, str]):
             literal = ""
             for char in token.text:
                 if (char_ord := ord(char)) in table:
-                    piece = f"{char}{table[char_ord]}"
+                    piece = table[char_ord]
 
-                    if in_class:
+                    if in_class or len(piece) == 1:
                         literal += piece
                     else:
                         literal += f"[{piece}]"

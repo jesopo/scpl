@@ -12,6 +12,9 @@ class ParseCasemappedRegex(ParseRegex):
     def eval(self, vars: Dict[str, ParseAtom]) -> Pattern:
         compiled = self._atom.eval(vars)
         if compiled.flags & re.I:
+            # because this is about case insensitivity, the replacement for `k` should
+            # include `k` - i.e. a casemap of a:A should translate `a` in to `aA`
+            casemap = {k: f"{chr(k)}{v}" for k, v in self._casemap.items()}
             tokens = regex.translator.translate(
                 regex.lexer.tokenise(compiled.pattern),
                 self._casemap
