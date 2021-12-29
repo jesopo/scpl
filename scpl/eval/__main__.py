@@ -1,4 +1,4 @@
-import sys, traceback
+import json, sys, traceback
 from collections import deque
 from time        import monotonic
 from typing      import Dict
@@ -9,18 +9,8 @@ from ..parser.operands import ParseAtom
 from ..parser.operators.common import ParseOperator
 from ..parser.__main__ import main_parser
 
-def main_eval(
-        line: str,
-        vars_serial: Dict[str, str]
-        ):
-
-    vars: Dict[str, ParseAtom] = {}
-    for key, value in vars_serial.items():
-        var_tokens = tokenise(value)
-        var_atoms, _ = parse(var_tokens, {})
-        vars[key] = var_atoms[0]
-
-    ast = main_parser(line, {k: type(v) for k, v in vars.items()})
+def main_eval(line: str, vars: Dict[str, ParseAtom]):
+    ast = main_parser(line, vars)
     if not isinstance(ast, ParseOperator):
         print(f"nothing to do")
         sys.exit(1)
@@ -39,9 +29,12 @@ def main_eval(
         print(f"duration: {(end-start)*1_000_000:.2f}μs")
 
 if __name__ == "__main__":
-    vars: Dict[str, str] = {}
-    if sys.argv[2:]:
+    vars: Dict[str, ParseAtom] = {}
+    if len(sys.argv) > 2:
         import json
-        vars = json.loads(sys.argv[2])
+        for key, value in json.loads(sys.argv[2]).items():
+            tokens = deque(tokenise(value))
+            atoms, deps = parse(tokens, {})
+            vars[key] = atoms[0]
 
     main_eval(sys.argv[1], vars)

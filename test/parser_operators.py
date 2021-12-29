@@ -260,31 +260,31 @@ class ParserOperatorTestBoth(unittest.TestCase):
 
 class ParserOperatorTestVariable(unittest.TestCase):
     def test_integer(self):
-        atoms, deps = parse(tokenise("a"), {"a": ParseInteger})
+        atoms, deps = parse(tokenise("a"), {"a": ParseInteger()})
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableInteger)
 
     def test_float(self):
-        atoms, deps = parse(tokenise("a"), {"a": ParseFloat})
+        atoms, deps = parse(tokenise("a"), {"a": ParseFloat()})
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableFloat)
 
     def test_string(self):
-        atoms, deps = parse(tokenise("a"), {"a": ParseString})
+        atoms, deps = parse(tokenise("a"), {"a": ParseString()})
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableString)
 
     def test_regex(self):
-        atoms, deps = parse(tokenise("a"), {"a": ParseRegex})
+        atoms, deps = parse(tokenise("a"), {"a": ParseRegex()})
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableRegex)
 
     def test_bool(self):
-        atoms, deps = parse(tokenise("a"), {"a": ParseBool})
+        atoms, deps = parse(tokenise("a"), {"a": ParseBool()})
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableBool)
 
     def test_ipv4(self):
-        atoms, deps = parse(tokenise("a"), {"a": ParseIPv4})
+        atoms, deps = parse(tokenise("a"), {"a": ParseIPv4()})
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableIPv4)
 
     def test_ipv6(self):
-        atoms, deps = parse(tokenise("a"), {"a": ParseIPv6})
+        atoms, deps = parse(tokenise("a"), {"a": ParseIPv6()})
         self.assertIsInstance(atoms[0], operators.variable.ParseVariableIPv6)
 
 class ParserOperatorTestPrecedence(unittest.TestCase):

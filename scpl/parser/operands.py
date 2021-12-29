@@ -169,15 +169,20 @@ class ParseConstRegex(ParseRegex):
         return re.compile(self.pattern, flags)
 
 class ParseIP(ParseAtom):
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        raise NotImplementedError()
+class ParseConstIP(ParseIP):
     def __init__(self, ip: int):
         self.integer = ip
     def __hash__(self) -> int:
         return hash(self.integer)
 
-    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseIP":
-        return self
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return self.integer
 
 class ParseIPv4(ParseIP):
+    pass
+class ParseConstIPv4(ParseIPv4, ParseConstIP):
     def __repr__(self) -> str:
         bytes = pack("!L", self.integer)
         ntop  = inet_ntop(AF_INET, bytes)
@@ -190,12 +195,11 @@ class ParseIPv4(ParseIP):
 
     @staticmethod
     def from_text(text: str) -> "ParseIPv4":
-        return ParseIPv4(ParseIPv4.to_int(text))
-
-    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseIPv4":
-        return self
+        return ParseConstIPv4(ParseConstIPv4.to_int(text))
 
 class ParseIPv6(ParseIP):
+    pass
+class ParseConstIPv6(ParseIPv6, ParseConstIP):
     def __repr__(self) -> str:
         high = self.integer >> 64
         low = self.integer & ((1 << 64) - 1)
@@ -210,17 +214,13 @@ class ParseIPv6(ParseIP):
 
     @staticmethod
     def from_text(text: str) -> "ParseIPv6":
-        return ParseIPv6(ParseIPv6.to_int(text))
-
-    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseIPv6":
-        return self
+        return ParseConstIPv6(ParseConstIPv6.to_int(text))
 
 class ParseCIDR(ParseAtom):
-    def __init__(self,
-            network: int,
-            prefix:  int,
-            maxbits: int):
-
+    def eval(self, vars: Dict[str, ParseAtom]) -> Tuple[int, int]:
+        raise NotImplementedError()
+class ParseConstCIDR(ParseCIDR):
+    def __init__(self, integer: int, prefix: int, maxbits: int):
         if prefix < 0 or prefix > maxbits:
             raise ValueError(f"invalid prefix length {prefix} (min 0 max {maxbits})")
 
@@ -228,20 +228,20 @@ class ParseCIDR(ParseAtom):
         # /8 becomes 0xFF000000
         self.mask    = ((1 << prefix) - 1) << (maxbits - prefix)
         # & here to remove any host bits
-        self.integer = network & self.mask
+        self.integer = integer & self.mask
 
         self._hash = hash((self.prefix, self.integer))
 
-    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseCIDR":
-        return self
     def __hash__(self) -> int:
         return self._hash
 
-class ParseCIDRv4(ParseCIDR):
-    def __init__(self,
-            network: int,
-            prefix:  int):
+    def eval(self, vars: Dict[str, ParseAtom]) -> Tuple[int, int]:
+        return (self.integer, self.mask)
 
+class ParseCIDRv4(ParseCIDR):
+    pass
+class ParseConstCIDRv4(ParseCIDRv4, ParseConstCIDR):
+    def __init__(self, network: int, prefix: int):
         super().__init__(network, prefix, 32)
 
     def __repr__(self) -> str:
@@ -252,16 +252,12 @@ class ParseCIDRv4(ParseCIDR):
     @staticmethod
     def from_text(text: str) -> "ParseCIDRv4":
         address, cidr = text.split("/")
-        return ParseCIDRv4(ParseIPv4.to_int(address), int(cidr))
-
-    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseCIDRv4":
-        return self
+        return ParseConstCIDRv4(ParseConstIPv4.to_int(address), int(cidr))
 
 class ParseCIDRv6(ParseCIDR):
-    def __init__(self,
-            network: int,
-            prefix:  int):
-
+    pass
+class ParseConstCIDRv6(ParseCIDRv6, ParseConstCIDR):
+    def __init__(self, network: int, prefix: int):
         super().__init__(network, prefix, 128)
 
     def __repr__(self) -> str:
@@ -274,10 +270,7 @@ class ParseCIDRv6(ParseCIDR):
     @staticmethod
     def from_text(text: str) -> "ParseCIDRv6":
         address, cidr = text.split("/")
-        return ParseCIDRv6(ParseIPv6.to_int(address), int(cidr))
-
-    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseCIDRv6":
-        return self
+        return ParseConstCIDRv6(ParseConstIPv6.to_int(address), int(cidr))
 
 KEYWORDS: Dict[str, ParseAtom] = {
     "true":  ParseConstBool(True),

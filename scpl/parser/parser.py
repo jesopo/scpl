@@ -20,7 +20,7 @@ SCOPE_COUNTERPART = {
 
 def parse(
         tokens: Deque[Token],
-        types: Dict[str, type]
+        vars: Dict[str, ParseAtom]
         ) -> Tuple[Sequence[ParseAtom], Set[str]]:
 
     operands: Deque[Tuple[ParseAtom, Token]] = deque()
@@ -144,7 +144,7 @@ def parse(
                 if token.text in KEYWORDS:
                     keyword_atom = KEYWORDS[token.text]
                     operands.append((keyword_atom, token))
-                elif (var_type := types.get(token.text)) is None:
+                elif (var_type := vars.get(token.text)) is None:
                     raise ParserError(token, f"unknown variable {token.text}")
                 elif (var := find_variable(token.text, var_type)) is None:
                     # shouldn't happen
@@ -168,14 +168,14 @@ def parse(
                 operands.append((ParseConstRegex.from_text(token.text), token))
             elif isinstance(token, TokenIPv4):
                 if "/" in token.text:
-                    operands.append((ParseCIDRv4.from_text(token.text), token))
+                    operands.append((ParseConstCIDRv4.from_text(token.text), token))
                 else:
-                    operands.append((ParseIPv4.from_text(token.text), token))
+                    operands.append((ParseConstIPv4.from_text(token.text), token))
             elif isinstance(token, TokenIPv6):
                 if "/" in token.text:
-                    operands.append((ParseCIDRv6.from_text(token.text), token))
+                    operands.append((ParseConstCIDRv6.from_text(token.text), token))
                 else:
-                    operands.append((ParseIPv6.from_text(token.text), token))
+                    operands.append((ParseConstIPv6.from_text(token.text), token))
             else:
                 raise ParserError(token, "unknown token")
         else:

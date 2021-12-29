@@ -24,9 +24,9 @@ class ParseBinaryContainsIPCIDR(ParseBinaryOperator, ParseBool):
     def __repr__(self) -> str:
         return f"Contains({self._left!r}, {self._right!r})"
     def eval(self, vars: Dict[str, ParseAtom]) -> bool:
-        right = self._right.eval(vars)
-        network = self._left.eval(vars).integer & right.mask
-        return network == right.integer
+        network_r, mask = self._right.eval(vars)
+        network_l = self._left.eval(vars) & mask
+        return network_l == network_r
 
 class ParseBinaryContainsHashSet(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseCastHash, right: ParseSet):

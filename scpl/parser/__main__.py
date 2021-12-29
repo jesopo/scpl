@@ -9,11 +9,11 @@ from .operands   import ParseAtom
 from ..lexer          import tokenise, LexerError
 from ..lexer.__main__ import main_lexer
 
-def main_parser(line: str, types: Dict[str, type]) -> ParseAtom:
+def main_parser(line: str, vars: Dict[str, ParseAtom]) -> ParseAtom:
     tokens = main_lexer(line)
     start = monotonic()
     try:
-        ast, deps = parse(tokens, types)
+        ast, deps = parse(tokens, vars)
     except ParserError as e:
         print()
         print(line)
@@ -31,11 +31,11 @@ def main_parser(line: str, types: Dict[str, type]) -> ParseAtom:
         return ast[0]
 
 if __name__ == "__main__":
-
-    vars: Dict[str, type] = {}
+    vars: Dict[str, ParseAtom] = {}
     if len(sys.argv) > 2:
         for key, value in json.loads(sys.argv[2]).items():
-            tokens    = deque(tokenise(value))
-            vars[key] = type(parse(tokens, {})[0])
+            tokens = deque(tokenise(value))
+            atoms, deps = parse(tokens, {})
+            vars[key] = atoms[0]
 
     main_parser(sys.argv[1], vars)

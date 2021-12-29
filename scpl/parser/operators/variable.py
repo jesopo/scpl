@@ -29,26 +29,26 @@ class ParseVariableBool(ParseVariable, ParseBool):
     def eval(self, vars: Dict[str, ParseAtom]) -> bool:
         return cast(ParseBool, vars[self.name]).eval(vars)
 class ParseVariableIPv4(ParseVariable, ParseIPv4):
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseIPv4:
-        return cast(ParseIPv4, vars[self.name])
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return cast(ParseIPv4, vars[self.name]).eval(vars)
 class ParseVariableIPv6(ParseVariable, ParseIPv6):
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseIPv6:
-        return cast(ParseIPv6, vars[self.name])
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return cast(ParseIPv6, vars[self.name]).eval(vars)
 
-def find_variable(name: str, var_type: type) -> Optional[ParseAtom]:
-    if var_type == ParseString:
+def find_variable(name: str, var_type: ParseAtom) -> Optional[ParseAtom]:
+    if isinstance(var_type, ParseString):
         return ParseVariableString(name)
-    elif var_type == ParseInteger:
+    elif isinstance(var_type, ParseInteger):
         return ParseVariableInteger(name)
-    elif var_type == ParseFloat:
+    elif isinstance(var_type, ParseFloat):
         return ParseVariableFloat(name)
-    elif var_type == ParseRegex:
+    elif isinstance(var_type, ParseRegex):
         return ParseVariableRegex(name)
-    elif var_type == ParseBool:
+    elif isinstance(var_type, ParseBool):
         return ParseVariableBool(name)
-    elif var_type == ParseIPv4:
+    elif isinstance(var_type, ParseIPv4):
         return ParseVariableIPv4(name)
-    elif var_type == ParseIPv6:
+    elif isinstance(var_type, ParseIPv6):
         return ParseVariableIPv6(name)
     else:
         return None
