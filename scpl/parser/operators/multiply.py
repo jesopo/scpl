@@ -10,8 +10,8 @@ class ParseBinaryMultiplyFloatFloat(ParseBinaryOperator, ParseFloat):
         self._right = right
     def __repr__(self) -> str:
         return f"Multiply({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
-        return ParseFloat(self._left.eval(vars).value * self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> float:
+        return self._left.eval(vars) * self._right.eval(vars)
 class ParseBinaryMultiplyFloatInteger(ParseBinaryMultiplyFloatFloat):
     def __init__(self, left: ParseFloat, right: ParseInteger):
         super().__init__(left, ParseCastIntegerFloat(right))
@@ -26,8 +26,8 @@ class ParseBinaryMultiplyIntegerInteger(ParseBinaryOperator, ParseInteger):
         self._right = right
     def __repr__(self) -> str:
         return f"Multiply({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
-        return ParseInteger(self._left.eval(vars).value * self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return self._left.eval(vars) * self._right.eval(vars)
 
 def find_binary_multiply(left: ParseAtom, right: ParseAtom):
     if isinstance(left, ParseFloat):

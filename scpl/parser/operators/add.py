@@ -1,8 +1,7 @@
-from typing import Dict, Optional
+import re
+from typing import Dict, Optional, Pattern
 from .common import ParseBinaryOperator
-from .complement import ParseUnaryComplementRegex
-from ..operands import (ParseAtom, ParseFloat, ParseInteger, ParseRegex,
-    ParseString)
+from ..operands import ParseAtom, ParseFloat, ParseInteger, ParseRegex, ParseString
 from .cast import ParseCastIntegerFloat, ParseCastStringRegex
 
 class ParseBinaryAddIntegerInteger(ParseBinaryOperator, ParseInteger):
@@ -12,8 +11,8 @@ class ParseBinaryAddIntegerInteger(ParseBinaryOperator, ParseInteger):
         self._right = right
     def __repr__(self) -> str:
         return f"Add({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
-        return ParseInteger(self._left.eval(vars).value + self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return self._left.eval(vars) + self._right.eval(vars)
 
 class ParseBinaryAddFloatFloat(ParseBinaryOperator, ParseFloat):
     def __init__(self, left: ParseFloat, right: ParseFloat):
@@ -22,8 +21,8 @@ class ParseBinaryAddFloatFloat(ParseBinaryOperator, ParseFloat):
         self._right = right
     def __repr__(self) -> str:
         return f"Add({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
-        return ParseFloat(self._left.eval(vars).value + self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> float:
+        return self._left.eval(vars) + self._right.eval(vars)
 class ParseBinaryAddFloatInteger(ParseBinaryAddFloatFloat):
     def __init__(self, left: ParseFloat, right: ParseInteger):
         super().__init__(left, ParseCastIntegerFloat(right))
@@ -38,16 +37,14 @@ class ParseBinaryAddStringString(ParseBinaryOperator, ParseString):
         self._right = right
     def __repr__(self) -> str:
         return f"Add({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseString:
-        left = self._left.eval(vars)
-        right = self._right.eval(vars)
+    def eval(self, vars: Dict[str, ParseAtom]) -> str:
+        return self._left.eval(vars) + self._right.eval(vars)
 
-        delim: Optional[str] = None
-        if (left.delimiter is not None
-                and left.delimiter == right.delimiter):
-            delim = left.delimiter
-
-        return ParseString(delim, left.value + right.value)
+def _reflags(flags: int):
+    sflags = ""
+    if flags & re.I:
+        sflags += "i"
+    return sflags
 
 class ParseBinaryAddRegexRegex(ParseBinaryOperator, ParseRegex):
     def __init__(self, left: ParseRegex, right: ParseRegex):
@@ -56,7 +53,7 @@ class ParseBinaryAddRegexRegex(ParseBinaryOperator, ParseRegex):
         self._right = right
     def __repr__(self) -> str:
         return f"Add({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseRegex:
+    def eval(self, vars: Dict[str, ParseAtom]) -> Pattern:
         left = self._left.eval(vars)
         right = self._right.eval(vars)
 
@@ -65,16 +62,11 @@ class ParseBinaryAddRegexRegex(ParseBinaryOperator, ParseRegex):
         regex_2      = right.pattern
 
         if uncommon := left.flags - common_flags:
-            regex_1 = f"(?{''.join(uncommon)}:{regex_1})"
+            regex_1 = f"(?{_reflags(uncommon)}:{regex_1})"
         if uncommon := right.flags - common_flags:
-            regex_2 = f"(?{''.join(uncommon)}:{regex_2})"
+            regex_2 = f"(?{_reflags(uncommon)}:{regex_2})"
 
-        delim: Optional[str] = None
-        if (left.delimiter is not None
-                and left.delimiter == right.delimiter):
-            delim = left.delimiter
-
-        return ParseRegex(delim, regex_1 + regex_2, common_flags, left.expected)
+        return re.compile(regex_1 + regex_2, common_flags)
 class ParseBinaryAddRegexString(ParseBinaryAddRegexRegex):
     def __init__(self, left: ParseRegex, right: ParseString):
         super().__init__(left, ParseCastStringRegex(right))
@@ -104,17 +96,8 @@ def find_binary_add(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
             return ParseBinaryAddStringRegex(left, right)
         else:
             return None
-    # ParseUnaryComplementRegex is a ParseRegex subtype.
-    # regexes can't concat with complement regexes (at the moment)
-    elif isinstance(left, ParseUnaryComplementRegex):
-        if isinstance(right, ParseUnaryComplementRegex):
-            return ParseBinaryAddRegexRegex(left, right)
-        else:
-            return None
     elif isinstance(left, ParseRegex):
-        if isinstance(right, ParseUnaryComplementRegex):
-            return None
-        elif isinstance(right, ParseRegex):
+        if isinstance(right, ParseRegex):
             return ParseBinaryAddRegexRegex(left, right)
         elif isinstance(right, ParseString):
             return ParseBinaryAddRegexString(left, right)

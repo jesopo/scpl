@@ -1,8 +1,8 @@
-from typing import Dict
+from typing import Any, Dict
 from ..operands import ParseAtom
 
 class ParseOperator(ParseAtom):
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseAtom:
+    def eval(self, vars: Dict[str, ParseAtom]) -> Any:
         raise NotImplementedError()
 
 class ParseBinaryOperator(ParseOperator):

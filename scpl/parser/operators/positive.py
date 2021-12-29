@@ -8,8 +8,8 @@ class ParseUnaryPositiveInteger(ParseUnaryOperator, ParseInteger):
         self._atom = atom
     def __repr__(self) -> str:
         return f"Positive({self._atom!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
-        return ParseInteger(+self._atom.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return +self._atom.eval(vars)
 
 class ParseUnaryPositiveFloat(ParseUnaryOperator, ParseFloat):
     def __init__(self, atom: ParseFloat):
@@ -17,8 +17,8 @@ class ParseUnaryPositiveFloat(ParseUnaryOperator, ParseFloat):
         self._atom = atom
     def __repr__(self) -> str:
         return f"Positive({self._atom!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
-        return ParseFloat(+self._atom.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> float:
+        return +self._atom.eval(vars)
 
 def find_unary_positive(atom: ParseAtom):
     if isinstance(atom, ParseInteger):

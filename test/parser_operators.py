@@ -117,14 +117,6 @@ class ParserOperatorTestComplement(unittest.TestCase):
         atoms, deps = parse(tokenise("~1"), {})
         self.assertIsInstance(atoms[0], operators.complement.ParseUnaryComplementInteger)
 
-    def test_regex(self):
-        atoms, deps = parse(tokenise("~/a/"), {})
-        self.assertIsInstance(atoms[0], operators.complement.ParseUnaryComplementRegex)
-    def test_regex_double(self):
-        # flatten a double complement in to an uncomplemented regex
-        atoms, deps = parse(tokenise("~~/a/"), {})
-        self.assertIsInstance(atoms[0], ParseRegex)
-
 class ParserOperatorTestAnd(unittest.TestCase):
     def test_integer_integer(self):
         atoms, deps = parse(tokenise("1 & 1"), {})

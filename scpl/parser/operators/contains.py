@@ -13,8 +13,8 @@ class ParseBinaryContainsStringString(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self) -> str:
         return f"Contains({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return ParseBool(self._left.eval(vars).value in self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return self._left.eval(vars) in self._right.eval(vars)
 
 class ParseBinaryContainsIPCIDR(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseIP, right: ParseCIDR):
@@ -23,10 +23,10 @@ class ParseBinaryContainsIPCIDR(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self) -> str:
         return f"Contains({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
         right = self._right.eval(vars)
         network = self._left.eval(vars).integer & right.mask
-        return ParseBool(network == right.integer)
+        return network == right.integer
 
 class ParseBinaryContainsHashSet(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseCastHash, right: ParseSet):
@@ -34,9 +34,9 @@ class ParseBinaryContainsHashSet(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self) -> str:
         return f"Contains({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
         right = self._right.eval(vars)
-        return ParseBool(self._left.eval(vars).value in right)
+        return self._left.eval(vars) in right
 
 class ParseBinaryContainsIntegerSet(ParseBinaryContainsHashSet):
     def __init__(self, left: ParseInteger, right: ParseSetInteger):

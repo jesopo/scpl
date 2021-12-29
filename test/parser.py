@@ -1,5 +1,4 @@
 import unittest
-from re        import compile as re_compile
 from ipaddress import ip_address, ip_network
 
 from scpl.lexer import tokenise
@@ -20,7 +19,6 @@ class ParserTestRegex(unittest.TestCase):
         self.assertIsInstance(atoms[0], ParseRegex)
         self.assertEqual(atoms[0].pattern, "a")
         self.assertEqual(atoms[0].delimiter, "/")
-        self.assertEqual(atoms[0].compiled, re_compile("a"))
         self.assertEqual(atoms[0].flags, set())
 
     def test_flags(self):
@@ -28,7 +26,6 @@ class ParserTestRegex(unittest.TestCase):
         self.assertIsInstance(atoms[0], ParseRegex)
         self.assertEqual(atoms[0].pattern, "a")
         self.assertEqual(atoms[0].delimiter, "/")
-        self.assertEqual(atoms[0].compiled, re_compile("a"))
         self.assertEqual(atoms[0].flags, set("abc"))
 
 class ParserTestInteger(unittest.TestCase):

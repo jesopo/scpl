@@ -9,8 +9,8 @@ class ParseBinaryEqualBoolBool(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self) -> str:
         return f"Equal({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return ParseBool(self._left.eval(vars).value == self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return self._left.eval(vars) == self._right.eval(vars)
 
 class ParseBinaryEqualIntegerInteger(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseInteger, right: ParseInteger):
@@ -19,8 +19,8 @@ class ParseBinaryEqualIntegerInteger(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self) -> str:
         return f"Equal({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return ParseBool(self._left.eval(vars).value == self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return self._left.eval(vars) == self._right.eval(vars)
 
 class ParseBinaryEqualStringString(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseString, right: ParseString):
@@ -29,8 +29,8 @@ class ParseBinaryEqualStringString(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self) -> str:
         return f"Equal({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return ParseBool(self._left.eval(vars).value == self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return self._left.eval(vars) == self._right.eval(vars)
 
 def find_binary_equal(left: ParseAtom, right: ParseAtom) -> Optional[ParseAtom]:
     if isinstance(left, ParseBool) and isinstance(right, ParseBool):

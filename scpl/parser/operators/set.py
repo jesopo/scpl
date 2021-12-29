@@ -12,7 +12,7 @@ class ParseSet(ParseAtom):
     def __repr__(self) -> str:
         return f"Set({', '.join(repr(a.atom) for a in self._atoms)})"
     def eval(self, vars: Dict[str, ParseAtom]) -> Set[int]:
-        nonconst = set(a.eval(vars).value for a in self._atoms)
+        nonconst = set(a.eval(vars) for a in self._atoms)
         return self._precompile | nonconst
 
 class ParseSetInteger(ParseSet):

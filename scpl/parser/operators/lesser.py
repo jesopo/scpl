@@ -10,8 +10,8 @@ class ParseBinaryLesserIntegerInteger(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self):
         return f"Lesser({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return ParseBool(self._left.eval(vars).value < self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return self._left.eval(vars) < self._right.eval(vars)
 
 class ParseBinaryLesserFloatFloat(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseFloat, right: ParseFloat):
@@ -20,8 +20,8 @@ class ParseBinaryLesserFloatFloat(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self):
         return f"Lesser({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return ParseBool(self._left.eval(vars).value < self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return self._left.eval(vars) < self._right.eval(vars)
 class ParseBinaryLesserFloatInteger(ParseBinaryLesserFloatFloat):
     def __init__(self, left: ParseFloat, right: ParseInteger):
         super().__init__(left, ParseCastIntegerFloat(right))

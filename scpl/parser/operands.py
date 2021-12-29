@@ -1,10 +1,9 @@
+import re
 from collections import deque, OrderedDict
 from dataclasses import dataclass
-from re          import compile as re_compile
-from re          import escape as re_escape
 from socket      import inet_ntop, inet_pton, AF_INET, AF_INET6
 from struct      import pack, unpack
-from typing      import Any, Deque, Dict, List, Optional, Set, Tuple, Type
+from typing      import Any, Deque, Dict, List, Optional, Pattern, Set, Tuple, Type
 from typing      import OrderedDict as TOrderedDict
 
 from ..common.util import with_delimiter
@@ -41,8 +40,8 @@ class ParseBool(ParseAtom):
     def from_text(text: str) -> "ParseBool":
         return ParseBool({"true": True, "false": False}[text])
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseBool":
-        return self
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return self.value
 
 class ParseInteger(ParseAtom):
     def __init__(self, value: int):
@@ -56,8 +55,8 @@ class ParseInteger(ParseAtom):
     def from_text(text: str) -> "ParseInteger":
         return ParseInteger(int(text))
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseInteger":
-        return self
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return self.value
 
 # sneaky little trick. convert hex to integer
 class ParseHex(ParseInteger):
@@ -72,7 +71,7 @@ DURATION_UNITS: TOrderedDict[str, int] = OrderedDict(reversed([
     ("d", SECONDS_D := SECONDS_H * 24),
     ("w", SECONDS_W := SECONDS_D * 7)
 ]))
-RE_DURATION = re_compile("^(\d+w)?(\d+d)?(\d+h)?(\d+m)?(\d+s)?$")
+RE_DURATION = re.compile("^(\d+w)?(\d+d)?(\d+h)?(\d+m)?(\d+s)?$")
 
 class ParseDuration(ParseInteger):
     def __repr__(self) -> str:
@@ -109,14 +108,11 @@ class ParseFloat(ParseAtom):
     def from_text(text: str) -> "ParseFloat":
         return ParseFloat(float(text))
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseFloat":
-        return self
+    def eval(self, vars: Dict[str, ParseAtom]) -> float:
+        return self.value
 
 class ParseString(ParseAtom):
-    def __init__(self,
-            delim: Optional[str],
-            value: str):
-
+    def __init__(self, delim: Optional[str], value: str):
         self.delimiter = delim
         self.value = value
 
@@ -132,21 +128,18 @@ class ParseString(ParseAtom):
     def from_text(text: str) -> "ParseString":
         return ParseString(text[0], text[1:-1])
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseString":
-        return self
+    def eval(self, vars: Dict[str, ParseAtom]) -> str:
+        return self.value
 
 class ParseRegex(ParseAtom):
     def __init__(self,
             delimiter: Optional[str],
             pattern: str,
-            flags: Set[str],
-            expected: bool):
+            flags: Set[str]):
 
         self.delimiter = delimiter
         self.pattern = pattern
         self.flags = flags
-        self.expected = expected
-        self.compiled = re_compile(pattern)
 
     def __str__(self) -> str:
         if self.delimiter is not None:
@@ -154,24 +147,25 @@ class ParseRegex(ParseAtom):
         else:
             regex = with_delimiter(self.pattern, REGEX_DELIMS)
         flags = ''.join(self.flags)
-        if not self.expected:
-            regex = f"~{regex}"
         return f"{regex}{flags}"
 
     def __repr__(self) -> str:
         return f"Regex({str(self)})"
     def __hash__(self) -> int:
-        return hash(self.compiled)
+        return hash((self.pattern, self.flags))
 
     @staticmethod
     def from_text(text: str) -> "ParseRegex":
         delim, r = text[0], text[1:]
         r, flags = r.rsplit(delim, 1)
 
-        return ParseRegex(delim, r, set(flags), True)
+        return ParseRegex(delim, r, set(flags))
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseRegex":
-        return self
+    def eval(self, vars: Dict[str, ParseAtom]) -> Pattern:
+        flags = 0
+        if "i" in self.flags:
+            flags |= re.I
+        return re.compile(self.pattern, flags)
 
 class ParseIP(ParseAtom):
     def __init__(self, ip: int):
@@ -179,7 +173,7 @@ class ParseIP(ParseAtom):
     def __hash__(self) -> int:
         return hash(self.integer)
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIP":
+    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseIP":
         return self
 
 class ParseIPv4(ParseIP):
@@ -197,7 +191,7 @@ class ParseIPv4(ParseIP):
     def from_text(text: str) -> "ParseIPv4":
         return ParseIPv4(ParseIPv4.to_int(text))
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv4":
+    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseIPv4":
         return self
 
 class ParseIPv6(ParseIP):
@@ -217,7 +211,7 @@ class ParseIPv6(ParseIP):
     def from_text(text: str) -> "ParseIPv6":
         return ParseIPv6(ParseIPv6.to_int(text))
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseIPv6":
+    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseIPv6":
         return self
 
 class ParseCIDR(ParseAtom):
@@ -237,7 +231,7 @@ class ParseCIDR(ParseAtom):
 
         self._hash = hash((self.prefix, self.integer))
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDR":
+    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseCIDR":
         return self
     def __hash__(self) -> int:
         return self._hash
@@ -259,7 +253,7 @@ class ParseCIDRv4(ParseCIDR):
         address, cidr = text.split("/")
         return ParseCIDRv4(ParseIPv4.to_int(address), int(cidr))
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDRv4":
+    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseCIDRv4":
         return self
 
 class ParseCIDRv6(ParseCIDR):
@@ -281,7 +275,7 @@ class ParseCIDRv6(ParseCIDR):
         address, cidr = text.split("/")
         return ParseCIDRv6(ParseIPv6.to_int(address), int(cidr))
 
-    def eval(self, variables: Dict[str, ParseAtom]) -> "ParseCIDRv6":
+    def eval(self, vars: Dict[str, ParseAtom]) -> "ParseCIDRv6":
         return self
 
 KEYWORDS: Dict[str, Type[ParseAtom]] = {

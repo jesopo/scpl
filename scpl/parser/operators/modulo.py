@@ -10,8 +10,8 @@ class ParseBinaryModuloIntegerInteger(ParseBinaryOperator, ParseInteger):
         self._right = right
     def __repr__(self) -> str:
         return f"Modulo({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
-        return ParseInteger(self._left.eval(vars).value % self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return self._left.eval(vars) % self._right.eval(vars)
 
 class ParseBinaryModuloFloatFloat(ParseBinaryOperator, ParseFloat):
     def __init__(self, left: ParseFloat, right: ParseFloat):
@@ -20,8 +20,8 @@ class ParseBinaryModuloFloatFloat(ParseBinaryOperator, ParseFloat):
         self._right = right
     def __repr__(self) -> str:
         return f"Modulo({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
-        return ParseFloat(self._left.eval(vars).value % self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> float:
+        return self._left.eval(vars) % self._right.eval(vars)
 class ParseBinaryModuloFloatInteger(ParseBinaryModuloFloatFloat):
     def __init__(self, left: ParseFloat, right: ParseInteger):
         super().__init__(left, ParseCastIntegerFloat(right))

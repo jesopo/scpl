@@ -1,6 +1,6 @@
-from typing import cast, Dict, Optional
-from ..operands import (ParseAtom, ParseBool, ParseFloat, ParseIPv4, ParseIPv6,
-    ParseInteger, ParseRegex, ParseString)
+from typing import cast, Dict, Optional, Pattern
+from ..operands import (ParseAtom, ParseBool, ParseFloat, ParseIPv4,
+    ParseIPv6, ParseInteger, ParseRegex, ParseString)
 
 class ParseVariable(ParseAtom):
     def __init__(self, name: str):
@@ -14,20 +14,20 @@ class ParseVariable(ParseAtom):
         return False
 
 class ParseVariableString(ParseVariable, ParseString):
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseString:
-        return cast(ParseString, vars[self.name])
+    def eval(self, vars: Dict[str, ParseAtom]) -> str:
+        return cast(ParseString, vars[self.name]).value
 class ParseVariableInteger(ParseVariable, ParseInteger):
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
-        return cast(ParseInteger, vars[self.name])
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return cast(ParseInteger, vars[self.name]).value
 class ParseVariableFloat(ParseVariable, ParseFloat):
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
-        return cast(ParseFloat, vars[self.name])
+    def eval(self, vars: Dict[str, ParseAtom]) -> float:
+        return cast(ParseFloat, vars[self.name]).value
 class ParseVariableRegex(ParseVariable, ParseRegex):
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseRegex:
-        return cast(ParseRegex, vars[self.name])
+    def eval(self, vars: Dict[str, ParseAtom]) -> Pattern:
+        return cast(ParseRegex, vars[self.name]).eval(vars)
 class ParseVariableBool(ParseVariable, ParseBool):
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return cast(ParseBool, vars[self.name])
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return cast(ParseBool, vars[self.name]).value
 class ParseVariableIPv4(ParseVariable, ParseIPv4):
     def eval(self, vars: Dict[str, ParseAtom]) -> ParseIPv4:
         return cast(ParseIPv4, vars[self.name])

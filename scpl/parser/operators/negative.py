@@ -8,8 +8,8 @@ class ParseUnaryNegativeInteger(ParseUnaryOperator, ParseInteger):
         self._atom = atom
     def __repr__(self) -> str:
         return f"Negative({self._atom!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseInteger:
-        return ParseInteger(-self._atom.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> int:
+        return -self._atom.eval(vars)
 
 class ParseUnaryNegativeFloat(ParseUnaryOperator, ParseFloat):
     def __init__(self, atom: ParseFloat):
@@ -17,8 +17,8 @@ class ParseUnaryNegativeFloat(ParseUnaryOperator, ParseFloat):
         self._atom = atom
     def __repr__(self) -> str:
         return f"Negative({self._atom!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseFloat:
-        return ParseFloat(-self._atom.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> float:
+        return -self._atom.eval(vars)
 
 def find_unary_negative(atom: ParseAtom) -> Optional[ParseAtom]:
     if isinstance(atom, ParseUnaryNegativeInteger):

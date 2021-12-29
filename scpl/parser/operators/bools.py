@@ -10,8 +10,8 @@ class ParseBinaryBoth(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self):
         return f"Both({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return ParseBool(self._left.eval(vars).value and self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return self._left.eval(vars) and self._right.eval(vars)
 
 class ParseBinaryEither(ParseBinaryOperator, ParseBool):
     def __init__(self, left: ParseBool, right: ParseBool):
@@ -20,8 +20,8 @@ class ParseBinaryEither(ParseBinaryOperator, ParseBool):
         self._right = right
     def __repr__(self):
         return f"Either({self._left!r}, {self._right!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return ParseBool(self._left.eval(vars).value or self._right.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return self._left.eval(vars) or self._right.eval(vars)
 
 def _double_cast(
         aleft: ParseAtom, aright: ParseAtom
@@ -56,8 +56,8 @@ class ParseUnaryNot(ParseUnaryOperator, ParseBool):
         self._atom = atom
     def __repr__(self) -> str:
         return f"Not({self._atom!r})"
-    def eval(self, vars: Dict[str, ParseAtom]) -> ParseBool:
-        return ParseBool(not self._atom.eval(vars).value)
+    def eval(self, vars: Dict[str, ParseAtom]) -> bool:
+        return not self._atom.eval(vars)
 
 def find_unary_not(atom: ParseAtom) -> Optional[ParseBool]:
     if (cast := _cast(atom)) is not None:
