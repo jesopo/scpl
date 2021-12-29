@@ -1,6 +1,7 @@
 import string
 from collections import deque
 from typing import Deque, Dict, List, Sequence, Tuple
+from .ranges import RANGE_CHARS
 
 RANGES: Tuple[str, str, str] = (
     string.ascii_uppercase,
@@ -41,6 +42,8 @@ class RegexTokenOpaque(RegexToken):
     pass
 class RegexTokenLiteral(RegexToken):
     pass
+class RegexTokenRange(RegexToken):
+    pass
 
 def tokenise_class(chars: Deque[str], offset: int) -> List[RegexToken]:
     startlen = len(chars)
@@ -61,12 +64,11 @@ def tokenise_class(chars: Deque[str], offset: int) -> List[RegexToken]:
             break
         elif char.isalpha() and chars[0] == "-" and chars[0]:
             range_c = char + chars.popleft()
-            for range in RANGES:
-                if ((r_start := range.find(char)) > -1
-                        and (r_end := range.find(chars[0])) > -1
-                        and r_end >= r_start):
-                    out.append(RegexTokenLiteral(range[r_start:r_end]))
-                    break
+            r_start = ord(char)
+            if (r_start in RANGE_CHARS
+                    and (r_end := ord(chars[0])) in RANGE_CHARS
+                    and RANGE_CHARS[r_start] == RANGE_CHARS[r_end]):
+                out.append(RegexTokenRange(range_c + chars.popleft()))
             else:
                 raise RegexLexerError(1, "invalid range")
         elif char == "\\":

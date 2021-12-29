@@ -1,6 +1,7 @@
 from typing import Dict, Sequence
-from .lexer import (tokenise, RegexToken, RegexTokenClass, RegexTokenOpaque,
-    RegexTokenLiteral)
+from .lexer import (tokenise, RegexToken, RegexTokenClass, RegexTokenLiteral,
+    RegexTokenOpaque, RegexTokenRange)
+from .ranges import get_range
 
 def translate(tokens: Sequence[RegexToken], table: Dict[int, str]):
     out = list(tokens)
@@ -9,6 +10,13 @@ def translate(tokens: Sequence[RegexToken], table: Dict[int, str]):
     for i, token in enumerate(out):
         if isinstance(token, RegexTokenClass):
             in_class = token.text == "["
+        elif isinstance(token, RegexTokenRange):
+            range_c = get_range(ord(token.text[0]), ord(token.text[2]))
+            if not (range_t := range_c.translate(table)) == range_c:
+                # /[a-c]/ becomes /[abc]/ and if 'a' is translated in to 'b' we end up
+                # with /[bbc]/ so the set stuff is to remove duplicates
+                range_s = "".join(sorted(set(range_t)))
+                out[i] = RegexTokenOpaque(range_s)
         elif isinstance(token, RegexTokenLiteral):
             literal = ""
             for char in token.text:
