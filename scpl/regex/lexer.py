@@ -20,7 +20,9 @@ def _find_unescaped(chars: Sequence[str], findchar: int) -> int:
     return -1
 
 class RegexLexerError(Exception):
-    pass
+    def __init__(self, index: int, error: str):
+        super().__init__(error)
+        self.index = index
 
 class RegexToken:
     def __init__(self, text: str):
@@ -40,7 +42,9 @@ class RegexTokenOpaque(RegexToken):
 class RegexTokenLiteral(RegexToken):
     pass
 
-def tokenise_class(chars: Deque[str]) -> List[RegexToken]:
+def tokenise_class(chars: Deque[str], offset: int) -> List[RegexToken]:
+    startlen = len(chars)
+
     out: List[RegexToken] = []
     if chars[0] == "^":
         out.append(RegexTokenOperator(chars.popleft()))
@@ -49,6 +53,7 @@ def tokenise_class(chars: Deque[str]) -> List[RegexToken]:
 
     chars.append("") # end of expression
     while chars[0]:
+        index = offset + (startlen - len(chars))
         char = chars.popleft()
         if char == "]":
             # this means the parent scope can know we closed our class correctly
@@ -63,16 +68,23 @@ def tokenise_class(chars: Deque[str]) -> List[RegexToken]:
                     out.append(RegexTokenLiteral(range[r_start:r_end]))
                     break
             else:
-                raise RegexLexerError("invalid range")
+                raise RegexLexerError(1, "invalid range")
+        elif char == "\\":
+            if not chars[0]:
+                raise RegexLexerError(index, "empty escape")
+            else:
+                out.append(RegexTokenOpaque(char + chars.popleft()))
         else:
             out.append(RegexTokenLiteral(char))
 
     return out
 
-def tokenise_expression(chars: Deque[str]) -> List[RegexToken]:
+def tokenise_expression(chars: Deque[str], offset: int) -> List[RegexToken]:
+    startlen = len(chars)
     out: List[RegexToken] = []
 
     while chars[0]:
+        index = offset + (startlen - len(chars))
         char = chars.popleft()
         if char == ")":
             # this means a maybe-existent parent scope can know we closed our scope successfully
@@ -87,17 +99,17 @@ def tokenise_expression(chars: Deque[str]) -> List[RegexToken]:
                     if scope_next == ":":
                         break
 
-            subexpression = tokenise_expression(chars)
+            subexpression = tokenise_expression(chars, index+1)
             if not chars[0] == ")":
-                raise RegexLexerError("no end")
+                raise RegexLexerError(index, "unterminated group")
             else:
                 out.append(RegexTokenScope(scope))
                 out.extend(subexpression)
                 out.append(RegexTokenScope(chars.popleft()))
         elif char == "[":
-            reclass = tokenise_class(chars)
+            reclass = tokenise_class(chars, index+1)
             if not chars[0] == "]":
-                raise RegexLexerError("no end")
+                raise RegexLexerError(index, "unterminated class")
             else:
                 out.append(RegexTokenClass(char))
                 out.extend(reclass)
@@ -106,7 +118,7 @@ def tokenise_expression(chars: Deque[str]) -> List[RegexToken]:
             repeat = ""
             repeat_end = _find_unescaped(chars, ord("}"))
             if repeat_end == -1:
-                raise RegexLexerError("no end")
+                raise RegexLexerError(index, "unterminated range")
             else:
                 for i in range(repeat_end):
                     repeat += chars.popleft()
@@ -115,7 +127,7 @@ def tokenise_expression(chars: Deque[str]) -> List[RegexToken]:
                 out.append(RegexTokenRepeat(chars.popleft()))
         elif char == "\\":
             if not chars[0]:
-                raise RegexLexerError("empty escape")
+                raise RegexLexerError(index, "empty escape")
             else:
                 out.append(RegexTokenOpaque(char + chars.popleft()))
         elif char in set("^.+*?$|"):
@@ -128,13 +140,22 @@ def tokenise_expression(chars: Deque[str]) -> List[RegexToken]:
 def tokenise(regex: str):
     chars = deque(regex)
     chars.append("") # end of expression
-    out = tokenise_expression(chars)
+    out = tokenise_expression(chars, 0)
     if chars[0] == "":
         return out
     else:
-        raise RegexLexerError("unexpected token")
+        raise RegexLexerError(len(regex)-len(chars)+1, "unexpected token")
 
 if __name__ == "__main__":
     import sys
-    out = tokenise(sys.argv[1])
-    print(out)
+    regex = sys.argv[1]
+    try:
+        out = tokenise(regex)
+    except RegexLexerError as e:
+        print(regex)
+        print(" "*e.index + "^")
+        print()
+        print(str(e))
+        sys.exit(1)
+    else:
+        print(out)
