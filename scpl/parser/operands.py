@@ -113,6 +113,7 @@ class ParseString(ParseAtom):
         raise NotImplementedError()
 class ParseConstString(ParseString):
     def __init__(self, delim: Optional[str], value: str):
+        super().__init__()
         self.delimiter = delim
         self.value = value
 
