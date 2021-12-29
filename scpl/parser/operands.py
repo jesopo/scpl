@@ -107,6 +107,8 @@ class ParseConstFloat(ParseFloat):
         return self.value
 
 class ParseString(ParseAtom):
+    def __init__(self, casemap: Optional[Dict[int, str]] = None):
+        self.casemap = casemap
     def eval(self, vars: Dict[str, ParseAtom]) -> str:
         raise NotImplementedError()
 class ParseConstString(ParseString):

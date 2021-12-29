@@ -1,4 +1,5 @@
 from typing import Dict
+from .casemap import ParseCasemappedRegex
 from .common import ParseBinaryOperator
 from ..operands import ParseAtom, ParseBool, ParseRegex, ParseString
 
@@ -21,6 +22,10 @@ class ParseBinaryMatchStringRegex(ParseBinaryOperator, ParseString):
 
 def find_binary_match(left: ParseAtom, right: ParseAtom):
     if isinstance(right, ParseRegex) and isinstance(left, ParseString):
-        return ParseBinaryMatchStringRegex(left, right)
+        if left.casemap is not None:
+            right_c = ParseCasemappedRegex(right, left.casemap)
+            return ParseBinaryMatchStringRegex(left, right_c)
+        else:
+            return ParseBinaryMatchStringRegex(left, right)
     else:
         return None

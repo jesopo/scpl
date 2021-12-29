@@ -14,6 +14,9 @@ class ParseVariable(ParseAtom):
         return False
 
 class ParseVariableString(ParseVariable, ParseString):
+    def __init__(self, name: str, casemap: Optional[Dict[int, str]] = None):
+        ParseVariable.__init__(self, name)
+        ParseString.__init__(self, casemap)
     def eval(self, vars: Dict[str, ParseAtom]) -> str:
         return cast(ParseString, vars[self.name]).eval(vars)
 class ParseVariableInteger(ParseVariable, ParseInteger):
@@ -37,7 +40,7 @@ class ParseVariableIPv6(ParseVariable, ParseIPv6):
 
 def find_variable(name: str, var_type: ParseAtom) -> Optional[ParseAtom]:
     if isinstance(var_type, ParseString):
-        return ParseVariableString(name)
+        return ParseVariableString(name, var_type.casemap)
     elif isinstance(var_type, ParseInteger):
         return ParseVariableInteger(name)
     elif isinstance(var_type, ParseFloat):
