@@ -79,11 +79,19 @@ def tokenise_expression(chars: Deque[str]) -> List[RegexToken]:
             chars.appendleft(char)
             break
         elif char == "(":
+            scope = char
+            if chars[0] == "?":
+                while chars[0] and not chars[0] == ")":
+                    scope_next = chars.popleft()
+                    scope += scope_next
+                    if scope_next == ":":
+                        break
+
             subexpression = tokenise_expression(chars)
             if not chars[0] == ")":
                 raise RegexLexerError("no end")
             else:
-                out.append(RegexTokenScope(char))
+                out.append(RegexTokenScope(scope))
                 out.extend(subexpression)
                 out.append(RegexTokenScope(chars.popleft()))
         elif char == "[":
