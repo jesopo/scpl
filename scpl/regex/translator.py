@@ -14,14 +14,12 @@ def translate(tokens: Sequence[RegexToken], table: Dict[int, str]):
             for char in token.text:
                 if (char_ord := ord(char)) in table:
                     piece = f"{char}{table[char_ord]}"
-                else:
-                    piece = char
 
-                if in_class:
-                    literal += piece
-                else:
-                    literal += f"[{piece}]"
-            out[i] = RegexTokenOpaque(literal)
+                    if in_class:
+                        literal += piece
+                    else:
+                        literal += f"[{piece}]"
+                    out[i] = RegexTokenOpaque(literal)
     return out
 
 if __name__ == "__main__":
