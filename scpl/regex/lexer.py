@@ -91,32 +91,32 @@ def tokenise_expression(chars: Deque[str], offset: int) -> List[RegexToken]:
             chars.appendleft(char)
             break
         elif char == "(":
-            scope = char
+            group_start = char
             if chars[0] == "?":
                 while chars[0] and not chars[0] == ")":
-                    scope_next = chars.popleft()
-                    scope += scope_next
-                    if scope_next == ":":
+                    group_next = chars.popleft()
+                    group_start += group_next
+                    if group_next == ":":
                         break
 
-            subexpression = tokenise_expression(chars, index+1)
+            group_tokens = tokenise_expression(chars, index+1)
             if not chars[0] == ")":
                 raise RegexLexerError(index, "unterminated group")
             else:
-                out.append(RegexTokenScope(scope))
-                out.extend(subexpression)
+                out.append(RegexTokenScope(group_start))
+                out.extend(group_tokens)
                 out.append(RegexTokenScope(chars.popleft()))
         elif char == "[":
-            reclass_start = char
+            class_start = char
             if chars[0] == "^":
-                reclass_start += chars.popleft()
+                class_start += chars.popleft()
 
-            reclass  = tokenise_class(chars, index+1)
+            class_tokens = tokenise_class(chars, index+1)
             if not chars[0] == "]":
                 raise RegexLexerError(index, "unterminated class")
             else:
-                out.append(RegexTokenClass(reclass_start))
-                out.extend(reclass)
+                out.append(RegexTokenClass(class_start))
+                out.extend(class_tokens)
                 out.append(RegexTokenClass(chars.popleft()))
         elif char == "{":
             repeat = ""
