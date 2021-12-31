@@ -62,9 +62,9 @@ def tokenise_class(chars: Deque[str], offset: int) -> List[RegexToken]:
             # this means the parent scope can know we closed our class correctly
             chars.appendleft(char)
             break
-        elif char.isalpha() and chars[0] == "-" and chars[0]:
+        elif ((r_start := ord(char)) in RANGE_CHARS
+                and chars[0] == "-" and chars[0]):
             range_c = char + chars.popleft()
-            r_start = ord(char)
             if (r_start in RANGE_CHARS
                     and (r_end := ord(chars[0])) in RANGE_CHARS
                     and RANGE_CHARS[r_start] == RANGE_CHARS[r_end]):
