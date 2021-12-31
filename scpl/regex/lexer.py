@@ -49,8 +49,6 @@ def tokenise_class(chars: Deque[str], offset: int) -> List[RegexToken]:
     startlen = len(chars)
 
     out: List[RegexToken] = []
-    if chars[0] == "^":
-        out.append(RegexTokenOperator(chars.popleft()))
     if chars[0] == "]":
         out.append(RegexTokenLiteral(chars.popleft()))
 
@@ -109,11 +107,15 @@ def tokenise_expression(chars: Deque[str], offset: int) -> List[RegexToken]:
                 out.extend(subexpression)
                 out.append(RegexTokenScope(chars.popleft()))
         elif char == "[":
-            reclass = tokenise_class(chars, index+1)
+            reclass_start = char
+            if chars[0] == "^":
+                reclass_start += chars.popleft()
+
+            reclass  = tokenise_class(chars, index+1)
             if not chars[0] == "]":
                 raise RegexLexerError(index, "unterminated class")
             else:
-                out.append(RegexTokenClass(char))
+                out.append(RegexTokenClass(reclass_start))
                 out.extend(reclass)
                 out.append(RegexTokenClass(chars.popleft()))
         elif char == "{":
